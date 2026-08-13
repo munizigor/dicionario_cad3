@@ -71,12 +71,21 @@
   font-family: var(--mono);
   font-size: var(--font-size-scale-down-01);
 }
+/* Nomes de tabela chegam a 29 caracteres em monoespaçada. Sem `min-width:0` o
+   conteúdo flex usa `min-width:auto` e empurra o painel, em vez de quebrar. */
+#lista-tabelas .menu-item .content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 #lista-tabelas .menu-item .qtd {
   margin-left: auto;
   padding-left: var(--spacing-scale-base);
   font-size: var(--font-size-scale-down-02);
   color: var(--texto-fraco);
 }
+/* Mesmo motivo, no título do cabeçalho do menu: o core dá `flex:1` sem
+   `min-width:0`. */
+.br-menu .menu-header .menu-title { min-width: 0; }
 #lista-tabelas .menu-item[aria-current="page"] {
   background-color: var(--superficie-realce);
   font-weight: var(--font-weight-semi-bold);
@@ -99,13 +108,28 @@
    .menu-container{position:fixed}` do core — que continuaria valendo se o
    usuário abrisse o menu no mobile e depois alargasse a janela. */
 @media (min-width: 992px) {
-  #main-navigation.br-menu { flex: 0 0 var(--largura-menu); width: var(--largura-menu); }
-  #main-navigation.br-menu .menu-container { display: flex; position: static; }
-  /* O core só dá largura ao painel via `.br-menu.active .menu-panel{flex:1}`, e
-     aqui o menu nunca fica `active` — quem o abre é este CSS, não o BRMenu.
-     Sem isto o painel vira `flex:0 1 auto` e encolhe até o conteúdo mínimo. */
+  /* O core não dá largura a nenhum dos três níveis do menu: só entrega
+     `flex:1` ao painel na regra `.br-menu.active .menu-panel`, e aqui o menu
+     nunca fica `active` — quem o abre é este CSS, não o BRMenu. Por isso a
+     largura é declarada explicitamente nos três, em vez de depender de como o
+     flex resolve `auto`: foi dessa dependência que vieram os defeitos de
+     layout anteriores, com o painel encolhendo até o conteúdo mínimo e
+     deixando um vão vazio ao lado. */
+  #main-navigation.br-menu {
+    flex: 0 0 var(--largura-menu);
+    width: var(--largura-menu);
+    max-width: var(--largura-menu);
+  }
+  /* Bloco, não flex: com o véu oculto não há nada a distribuir, e um filho
+     em bloco ocupa a largura do pai sem depender de flex-basis. */
+  #main-navigation.br-menu .menu-container {
+    display: block;
+    position: static;
+    width: 100%;
+  }
   #main-navigation.br-menu .menu-panel {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
     position: sticky;
