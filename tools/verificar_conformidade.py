@@ -254,8 +254,12 @@ def verificar_componentes(rel, doc, fonte_app):
 def verificar_assets(rel, doc):
     g = rel.grupo("Assets vendorizados")
 
+    # Só interessam recursos que o navegador carrega. Um <a href> para fora é
+    # navegação do usuário, não dependência da página.
     referencias = []
     for elemento in doc.elementos:
+        if elemento["tag"] not in ("link", "script", "img", "source", "iframe"):
+            continue
         for chave in ("href", "src"):
             valor = elemento["attrs"].get(chave)
             if valor:
@@ -351,6 +355,25 @@ def verificar_residuos(rel, fontes):
                    "encontrado em: %s" % ", ".join(encontrados))
 
 
+def verificar_ganchos(rel, doc, fonte_app):
+    """Todo elemento que o app.js procura por id precisa existir no HTML.
+
+    É a classe de bug mais provável ao trocar a camada visual: o JS continua
+    procurando um id que o template novo renomeou, e a página quebra em branco
+    sem nenhum aviso.
+    """
+    g = rel.grupo("Ganchos entre app.js e index.html")
+    ids = doc.ids()
+    procurados = sorted(set(re.findall(r'\$\("#([A-Za-z0-9_-]+)"\)', fonte_app)) |
+                        set(re.findall(r'getElementById\("([A-Za-z0-9_-]+)"\)', fonte_app)))
+    for ident in procurados:
+        # `col-<nome>` é gerado em tempo de execução pela própria grade.
+        if ident.startswith("col-"):
+            continue
+        rel.checar(g, ident in ids, 'app.js procura #%s e o elemento existe' % ident)
+    rel.checar(g, procurados, "app.js referencia elementos do template")
+
+
 def verificar_funcionalidades(rel, fonte_app):
     """A adequação não pode custar funcionalidade. Estas são as capacidades que
     precisam sobreviver à troca da camada visual."""
@@ -398,6 +421,7 @@ def main():
         "app.js": fonte_app,
         "styles.css": fonte_css,
     })
+    verificar_ganchos(rel, doc, fonte_app)
     verificar_funcionalidades(rel, fonte_app)
 
     rel.imprimir()
