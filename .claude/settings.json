@@ -35,7 +35,8 @@
       "Bash(curl -s \"http://127.0.0.1:8000/index.html\")",
       "Bash(sed -i 's|71 checagens estáticas|73 checagens estáticas|' documentacao/CHANGELOG.md)",
       "Bash(sed -i 's|# 71 checagens; sai 1|# 73 checagens; sai 1|' documentacao/arquitetura.md)",
-      "Bash(git commit -q -m 'fix: cache busting em styles.css e app.js *)"
+      "Bash(git commit -q -m 'fix: cache busting em styles.css e app.js *)",
+      "Bash(sed -i 's|href=\"styles.css?v=2\"|href=\"styles.css?v=3\"|; s|src=\"app.js?v=2\"|src=\"app.js?v=3\"|' docs/index.html)"
     ]
   }
 }

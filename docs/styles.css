@@ -86,6 +86,19 @@
 /* Mesmo motivo, no título do cabeçalho do menu: o core dá `flex:1` sem
    `min-width:0`. */
 .br-menu .menu-header .menu-title { min-width: 0; }
+
+/* A largura do painel é declarada FORA de qualquer media query, de propósito.
+   O core não dá largura a `.br-menu`, `.menu-container` nem `.menu-panel`: o
+   painel só ganha `flex:1` quando o menu está `.active`. Isso deixa dois
+   estados em que ele encolhe até o conteúdo mínimo — no offcanvas, onde o
+   container é `position:fixed` e o véu come o espaço restante; e no menu
+   permanente, onde `.active` nunca entra. Uma largura incondicional cobre os
+   dois sem depender de qual media query está valendo. */
+.br-menu .menu-panel {
+  flex: 0 0 auto;
+  width: var(--largura-menu);
+  max-width: 85vw;
+}
 #lista-tabelas .menu-item[aria-current="page"] {
   background-color: var(--superficie-realce);
   font-weight: var(--font-weight-semi-bold);
@@ -127,11 +140,13 @@
     position: static;
     width: 100%;
   }
+  /* A largura já vem da regra incondicional acima; aqui só o que é específico
+     do menu permanente. */
   #main-navigation.br-menu .menu-panel {
     display: flex;
     flex-direction: column;
-    width: 100%;
     min-width: 0;
+    max-width: 100%;
     position: sticky;
     top: var(--spacing-scale-2x);
     height: auto;
