@@ -62,6 +62,15 @@ documentacao/    docs do projeto: processo-negocio, arquitetura, decisoes (ADRs)
 - **Não existem** no core 3.7.0: `.w-100`, `.h-100`, `.gap-*`, `.rounded`, `--surface-base-*`.
   Arredondamento é `--surface-rounder-*`.
 - O DS **não tem dark mode global** — só modificadores por componente (`.dark-mode`, `.inverted`).
+- **O `br-menu` não tem largura nenhuma no core.** O painel só ganha `flex:1` quando o menu está
+  `.active`. Menu aberto por CSS precisa de `flex:1` explícito no `.menu-panel`, senão ele encolhe
+  até o conteúdo mínimo. O menu deste site fica permanente a partir de **992px** (ADR-005).
+- **`.input-icon` é `position:absolute` sem `top`** — ancora no topo do `.br-input`, que inclui o
+  `<label>`. Com label visível, o ícone cai sobre o label. Só use onde o label está oculto.
+- **`has-icon` não posiciona ícone à esquerda**, apesar do nome: ela só abre `padding-right` no
+  campo, para botão à direita.
+- `.text-up-*` usam `!important` e congelam o `font-size`, matando o crescimento responsivo do `h1`
+  (29px → 41,8px acima de 576px). Não existem variantes por breakpoint.
 
 ## Acessibilidade
 

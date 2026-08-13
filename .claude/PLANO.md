@@ -14,7 +14,7 @@ Referência: `.claude/PROBLEMA.md` · plano de execução detalhado em
 | Órgão | Placeholder `TODO`, preenchido antes da publicação |
 | Assets | Vendorizados em `docs/assets/` |
 | Tema escuro | Removido |
-| Navegação | `br-menu` offcanvas, fixado aberto por CSS a partir de 1280px (ver ADR-005) |
+| Navegação | `br-menu` offcanvas, fixado aberto por CSS a partir de 992px (ver ADR-005) |
 | Alvo de acessibilidade | WCAG 2.2 A+AA (ABNT NBR 17225:2025) |
 
 ## Stories
@@ -55,7 +55,7 @@ Referência: `.claude/PROBLEMA.md` · plano de execução detalhado em
 - [x] Grade, selos PK/FK/NN e diagramas SVG reescritos sobre tokens do DS
 - [x] Tema escuro removido (commit separado)
 - [x] `@media print` e `prefers-reduced-motion` preservados
-- [x] Menu aberto por padrão a partir de 1280px, com o desvio comentado no CSS
+- [x] Menu aberto por padrão a partir de 992px, com o desvio comentado no CSS
 
 ### S5 — Componentes no app.js
 > Como usuário, quero cards, botões, tags, breadcrumb e mensagens no padrão.
@@ -89,11 +89,11 @@ renderização continua por conferir. Roteiro proposto, com `python -m http.serv
    acento (`ocorrencia` deve achar `Ocorrência`) · deep link
    `#/tabela/OCORRENCIA?col=ID_OCORRENCIA` · `#/mapa` com zoom, arrasto e destaque de vizinhança ·
    rota inválida.
-2. **Menu:** aberto e fixo acima de 1280px; offcanvas com véu e botão de fechar abaixo disso;
+2. **Menu:** aberto e fixo acima de 992px; offcanvas com véu e botão de fechar abaixo disso;
    filtro incremental atualizando o contador; item da tabela atual destacado.
 3. **Exportações:** DDL, JSON, CSV (abrir no Excel para conferir o BOM) e Mermaid de uma tabela;
    DDL e JSON completos na home.
-4. **Responsivo:** 360 · 992 · 1280 · 1600px.
+4. **Responsivo:** 360 · 991 · 992 · 1279 · 1280 · 1600px.
 5. **Teclado:** Tab desde o topo, os quatro `accesskey`, `/` para focar a busca, `Escape`,
    ordenação da grade anunciando `aria-sort`.
 6. **Institucional:** barra do Governo Federal carregando e botão do VLibras aparecendo.

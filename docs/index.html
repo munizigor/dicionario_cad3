@@ -97,9 +97,10 @@
           <!-- O <form> existe para que o Enter dispare a busca e para expor
                role="search"; o CSS o torna transparente ao layout do DS. -->
           <form class="busca-form" id="form-busca" role="search">
+            <!-- `has-icon` aqui serve ao botão da direita: o que a classe faz é
+                 abrir padding-right no campo, não posicionar ícone à esquerda. -->
             <div class="br-input has-icon">
               <label for="busca-global">Buscar tabela, coluna ou descrição</label>
-              <div class="input-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
               <input id="busca-global" type="search" placeholder="Buscar tabela, coluna ou descrição…"
                      autocomplete="off" spellcheck="false">
               <button class="br-button circle small" type="submit" aria-label="Pesquisar">
@@ -121,7 +122,7 @@
       <div class="row">
 
         <!-- br-menu no modo offcanvas padrão: no mobile o DS cuida de tudo
-             (véu, botão de fechar, foco). A partir de 1280px o CSS o fixa
+             (véu, botão de fechar, foco). A partir de 992px o CSS o fixa
              aberto — ver ADR-005. O modificador `push` não serve aqui porque
              esconde o véu e o cabeçalho do menu, deixando o mobile sem forma
              de fechar. -->
@@ -142,15 +143,18 @@
 
               <!-- Filtro incremental das 71 tabelas. O br-menu do DS não prevê
                    busca interna, então este bloco é próprio, montado com o
-                   br-input do padrão. -->
+                   br-input do padrão. Sem `.input-icon`: ele é position:absolute
+                   sem `top`, então ancora no topo do .br-input e cai sobre o
+                   label em vez de ficar sobre o campo. -->
               <div class="menu-filtro">
-                <div class="br-input has-icon">
-                  <label for="filtro-tabelas">Filtrar tabelas</label>
-                  <div class="input-icon"><i class="fas fa-filter" aria-hidden="true"></i></div>
+                <div class="br-input">
+                  <label for="filtro-tabelas">
+                    Filtrar tabelas
+                    <span class="contador" id="contador-tabelas" aria-live="polite"></span>
+                  </label>
                   <input id="filtro-tabelas" type="search" placeholder="Filtrar tabelas…"
                          autocomplete="off" spellcheck="false">
                 </div>
-                <span class="contador" id="contador-tabelas" aria-live="polite"></span>
               </div>
 
               <nav class="menu-body" id="lista-tabelas" role="tree" aria-label="Lista de tabelas"></nav>

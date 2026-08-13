@@ -25,7 +25,10 @@
   --fk: var(--green-cool-vivid-50);
   --nn: var(--violet-vivid-70);
 
-  --largura-menu: 17rem;
+  /* 16rem entre md e lg, 18rem acima: `OCORRENCIA_VEICULO_CORTEX_AUD` tem 29
+     caracteres e precisa caber em monoespaçada ao lado da contagem de colunas,
+     mas em telas menores o conteúdo principal precisa do espaço. */
+  --largura-menu: 16rem;
 }
 
 /* ---------- cabeçalho ---------- */
@@ -37,18 +40,24 @@
 /* ---------- menu lateral ---------- */
 
 .menu-filtro {
-  position: relative;
   padding: var(--spacing-scale-2x) var(--spacing-scale-2x) var(--spacing-scale-base);
   border-bottom: var(--border-width) solid var(--border-color);
 }
+/* O contador vive dentro do <label>, empurrado para a direita por flex. Já foi
+   posicionamento absoluto e encostava na borda quando o painel encolhia. */
+.menu-filtro label { display: flex; align-items: baseline; }
 .menu-filtro .contador {
-  position: absolute;
-  right: calc(var(--spacing-scale-2x) + var(--spacing-scale-base));
-  bottom: calc(var(--spacing-scale-base) + var(--spacing-scale-baseh));
-  font: 400 var(--font-size-scale-down-02) / 1 var(--mono);
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--font-size-scale-down-02);
+  font-weight: var(--font-weight-regular);
   color: var(--texto-fraco);
-  pointer-events: none;
 }
+
+/* 71 itens numa lista rolante: com os 16px de padding vertical que o DS usa por
+   padrão cabem ~5 por tela. A variável existe no componente justamente para
+   ajustar densidade. */
+#lista-tabelas .menu-item { --menu-item-padding: var(--spacing-scale-half); }
 
 #lista-tabelas .grupo-titulo {
   padding: var(--spacing-scale-baseh) var(--spacing-scale-2x) var(--spacing-scale-half);
@@ -79,20 +88,26 @@
   color: var(--texto-fraco);
 }
 
-/* A partir de lg o menu fica aberto de forma permanente e o gatilho some.
+/* A partir de md o menu fica aberto de forma permanente e o gatilho some.
    Desvio deliberado do comportamento nativo do br-menu, que nasce fechado:
    este menu é a navegação primária entre 71 tabelas, e com o padrão de origem
    cada troca de tabela custaria dois cliques e uma reabertura (ADR-005).
-   Abaixo de 1280px nada disso vale e o comportamento é 100% o do DS:
-   offcanvas com véu, botão de fechar e controle de foco pelo BRMenu.
+   Abaixo de 992px nada disso vale e o comportamento é 100% o do DS: offcanvas
+   com véu, botão de fechar e controle de foco pelo BRMenu.
 
    Os seletores usam o #id porque a regra precisa vencer `.br-menu.active
    .menu-container{position:fixed}` do core — que continuaria valendo se o
    usuário abrisse o menu no mobile e depois alargasse a janela. */
-@media (min-width: 1280px) {
+@media (min-width: 992px) {
   #main-navigation.br-menu { flex: 0 0 var(--largura-menu); width: var(--largura-menu); }
   #main-navigation.br-menu .menu-container { display: flex; position: static; }
+  /* O core só dá largura ao painel via `.br-menu.active .menu-panel{flex:1}`, e
+     aqui o menu nunca fica `active` — quem o abre é este CSS, não o BRMenu.
+     Sem isto o painel vira `flex:0 1 auto` e encolhe até o conteúdo mínimo. */
   #main-navigation.br-menu .menu-panel {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
     position: sticky;
     top: var(--spacing-scale-2x);
     height: auto;
@@ -105,15 +120,26 @@
   .header-menu-trigger { display: none; }
 }
 
+@media (min-width: 1280px) {
+  :root { --largura-menu: 18rem; }
+}
+
 /* ---------- blocos de conteúdo ---------- */
 
 .cabecalho-pagina { margin-bottom: var(--spacing-scale-3x); }
-.cabecalho-pagina h1 {
-  margin: 0 0 var(--spacing-scale-half);
+.cabecalho-pagina h1 { margin: 0 0 var(--spacing-scale-half); }
+
+/* Só o nome da tabela vai em monoespaçada — é identificador, não título. Nas
+   demais páginas o h1 fica como o DS define, em Rawline. O tamanho também cai:
+   o h1 do padrão tem 41,8px acima de 576px, desproporcional para um nome
+   técnico longo em monoespaçada. */
+.cabecalho-tabela h1 {
   font-family: var(--mono);
+  font-size: var(--font-size-scale-up-04);
+  font-weight: var(--font-weight-semi-bold);
   overflow-wrap: anywhere;
 }
-.cabecalho-pagina h1 .schema { color: var(--texto-fraco); font-weight: var(--font-weight-regular); }
+.cabecalho-tabela h1 .schema { color: var(--texto-fraco); font-weight: var(--font-weight-regular); }
 .descricao-tabela {
   margin: var(--spacing-scale-base) 0 0;
   max-width: 62rem;

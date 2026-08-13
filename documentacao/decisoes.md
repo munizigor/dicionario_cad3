@@ -101,7 +101,7 @@ mesmo assim, para que o rótulo da coluna esteja disponível a leitores de tela,
 **Contexto.** O `br-menu` do DS nasce fechado e abre pelo botão do cabeçalho, em qualquer largura.
 
 **Decisão.** Usar o `br-menu` no modo offcanvas padrão, **sem** o modificador `push`, e mantê-lo
-aberto a partir de 1280px por media query própria, escondendo o gatilho nessa faixa.
+aberto a partir de **992px** (`md`) por media query própria, escondendo o gatilho nessa faixa.
 
 **Justificativa.** O menu é a navegação primária entre 71 tabelas. Com o comportamento nativo, cada
 troca de tabela custaria dois cliques e uma reabertura — o uso principal do site ficaria penalizado.
@@ -112,9 +112,25 @@ deixaria o menu aberto sem véu e sem botão de fechar — o usuário ficaria pr
 mobile recebe o comportamento completo do DS (véu, fechar, controle de foco) e o desvio fica contido
 numa media query de desktop.
 
-**Consequências.** As regras do desvio usam o `#main-navigation` como seletor, para vencer
+O corte é 992px e não 1280px (`lg`) por causa da escala de tela do Windows, comum em notebooks: um
+monitor de 1366px a 125% reporta 1092px CSS, e um de 1600px a 150% reporta 1067px. Com o corte em
+1280 essas pessoas cairiam no offcanvas — exatamente o público que esta decisão quer atender.
+
+**Consequências.**
+
+As regras do desvio usam o `#main-navigation` como seletor, para vencer
 `.br-menu.active .menu-container{position:fixed}` do core — que voltaria a valer se o usuário
 abrisse o menu no mobile e depois alargasse a janela.
+
+**O core não define largura alguma** para `.br-menu`, `.menu-container` ou `.menu-panel`. O painel só
+ganha `flex:1` na regra `.br-menu.active .menu-panel`, e aqui o menu nunca fica `active` — quem o
+abre é o CSS. Sem `flex:1` explícito, o painel vira `flex:0 1 auto` e encolhe até o conteúdo mínimo,
+que foi o defeito observado na primeira abertura em navegador. Qualquer largura de menu no gov.br
+3.7.0 tem que vir do CSS do projeto.
+
+Entre 992 e 1279px o DS ainda mantém a busca do cabeçalho como overlay e os links de acesso rápido
+como dropdown. Menu fixo com busca em overlay é uma inconsistência menor, aceita em troca do ganho de
+navegação.
 
 ---
 

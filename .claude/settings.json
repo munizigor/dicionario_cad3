@@ -19,7 +19,12 @@
       "Bash(git commit -q -m 'refactor: reescreve o CSS sobre os tokens do design system *)",
       "Bash(git commit -q -m 'feat: adapta o app.js aos componentes br-* do DS *)",
       "Bash(git commit -q -m 'test: verifica os ganchos entre app.js e index.html *)",
-      "Bash(git commit -q -m 'docs: atualiza README e documentacao do sistema *)"
+      "Bash(git commit -q -m 'docs: atualiza README e documentacao do sistema *)",
+      "WebSearch",
+      "Bash(grep -o -E 'function dc\\\\\\(t\\\\\\).{0,500}' barra.js)",
+      "Bash(grep -o -E 'function fc\\\\\\(t\\\\\\).{0,400}' barra.js)",
+      "Bash(grep -o -E 'function Gr\\\\\\(t,e,i\\\\\\).{0,600}' barra.js)",
+      "Bash(grep -o -E '.{80}\\\\{mostrarDados:[^}]{0,120}\\\\}.{0,80}' barra.js)"
     ]
   }
 }

@@ -960,9 +960,10 @@
       autocomplete: "off",
       oninput: function (ev) { estado.filtro = ev.target.value; desenhar(); }
     });
-    var filtro = el("div", { classe: "br-input has-icon filtro-colunas" }, [
+    // Sem `.input-icon`: ele é position:absolute sem `top` e ancora no topo do
+    // .br-input, caindo sobre o label em vez de ficar sobre o campo.
+    var filtro = el("div", { classe: "br-input filtro-colunas" }, [
       el("label", { classe: "sr-only", "for": "filtro-colunas", texto: "Filtrar colunas desta tabela" }),
-      el("div", { classe: "input-icon" }, [icone("filter")]),
       campo
     ]);
 
@@ -1049,7 +1050,7 @@
     var frag = document.createDocumentFragment();
     var pks = tabela.colunas.filter(function (c) { return c.pk; });
 
-    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
+    frag.appendChild(el("div", { classe: "cabecalho-pagina cabecalho-tabela" }, [
       el("h1", {}, [
         tabela.schema ? el("span", { classe: "schema", texto: tabela.schema + "." }) : null,
         document.createTextNode(tabela.nome)

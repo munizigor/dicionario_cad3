@@ -20,7 +20,7 @@ que muda é a camada de apresentação e a acessibilidade.
 - `index.html`, `styles.css` e `app.js` reescritos sobre os componentes e tokens do DS.
 - `styles.css` encolheu de 377 para 250 linhas e deixou de usar cores literais.
 - Grade de colunas, selos PK/FK/NN e diagramas SVG permanecem próprios, agora sobre tokens do DS.
-- O menu lateral passou a ser `br-menu`: offcanvas no mobile, permanente a partir de 1280px.
+- O menu lateral passou a ser `br-menu`: offcanvas no mobile, permanente a partir de 992px.
 
 ### Removido
 - **Tema escuro.** O DS 3.7.0 não tem dark mode global e mantê-lo exigiria uma paleta paralela não

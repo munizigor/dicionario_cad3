@@ -61,7 +61,8 @@ O que continua sendo CSS próprio, porque o DS não cobre:
 - **Grade densa de colunas** — cabeçalho sticky dentro do card, ordenação clicável, filtro.
 - **Selos PK / FK / NN** — `br-tag` com três cores semânticas derivadas de tokens do DS.
 - **Diagramas SVG** — nós, arestas, marcadores e zoom.
-- **Menu permanente no desktop** — media query a partir de 1280px (ADR-005).
+- **Menu permanente no desktop** — media query a partir de 992px (ADR-005). O core não dá largura
+  nenhuma ao `br-menu`; o painel precisa de `flex:1` explícito.
 
 Regra ao editar `styles.css`: **nenhuma cor literal**. Toda cor sai de um token do DS. Há um
 verificador para isso na seção seguinte.
