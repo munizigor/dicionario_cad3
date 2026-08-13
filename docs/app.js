@@ -512,7 +512,7 @@
     defs.querySelectorAll("path").forEach(function (p) {
       var classe = p.getAttribute("class");
       p.setAttribute("fill", classe === "preenchimento-entrada" ? "var(--fk)"
-        : classe === "preenchimento-saida" ? "var(--acento)" : "var(--borda-forte)");
+        : classe === "preenchimento-saida" ? "var(--interactive)" : "var(--gray-30)");
     });
     return defs;
   }
@@ -792,16 +792,61 @@
    * Componentes de página
    * ------------------------------------------------------------------ */
 
+  /* Um painel é um br-card do design system: o <h2> vira card-header, com o
+     selo alinhado à direita, e o conteúdo vira card-content. */
   function painel(titulo, selo, conteudo, semPadding) {
-    return el("section", { classe: "painel" }, [
-      el("h2", {}, [titulo, selo ? el("span", { classe: "selo", texto: selo }) : null]),
-      semPadding ? conteudo : el("div", { classe: "painel-corpo" }, [conteudo])
+    return el("section", { classe: "br-card mb-4" }, [
+      el("h2", { classe: "card-header" }, [
+        document.createTextNode(titulo),
+        selo ? el("span", { classe: "selo", texto: selo }) : null
+      ]),
+      el("div", { classe: semPadding ? "card-content p-0" : "card-content" }, [conteudo])
     ]);
   }
 
   function linkTabela(nome, rotulo) {
     if (!POR_NOME[nome]) return el("span", { texto: nome });
     return el("a", { href: "#/tabela/" + nome, texto: rotulo || nome });
+  }
+
+  /* Ícone Font Awesome. Sempre aria-hidden: o rótulo acessível vem do texto ao
+     lado ou do aria-label de quem o contém. */
+  function icone(nome) {
+    return el("i", { classe: "fas fa-" + nome, "aria-hidden": "true" });
+  }
+
+  /* Botão do DS. `enfase` é "primary", "secondary" ou vazio (terciário). */
+  function botao(rotulo, nomeIcone, aoClicar, enfase) {
+    return el("button", {
+      classe: "br-button" + (enfase ? " " + enfase : ""),
+      type: "button",
+      onclick: aoClicar
+    }, [nomeIcone ? icone(nomeIcone) : null, document.createTextNode(rotulo)]);
+  }
+
+  function tag(texto, classeExtra) {
+    return el("span", { classe: "br-tag" + (classeExtra ? " " + classeExtra : "") }, [
+      el("span", { texto: texto })
+    ]);
+  }
+
+  /* br-message do DS. `tipo` é "info", "success", "warning" ou "danger" — o
+     ícone de cada um é convencionado pelo padrão. */
+  var ICONE_MENSAGEM = {
+    info: "info-circle", success: "check-circle",
+    warning: "exclamation-triangle", danger: "times-circle"
+  };
+
+  function mensagem(tipo, titulo, corpo) {
+    return el("div", { classe: "br-message " + tipo }, [
+      el("div", { classe: "icon" }, [
+        el("i", { classe: "fas fa-" + ICONE_MENSAGEM[tipo] + " fa-lg", "aria-hidden": "true" })
+      ]),
+      el("div", { classe: "content", role: "alert", "aria-label": titulo + " " + corpo }, [
+        el("span", { classe: "message-title", texto: titulo }),
+        el("span", { classe: "message-body", texto: " " + corpo })
+      ])
+    ]);
   }
 
   function tabelaColunas(tabela) {
@@ -821,23 +866,31 @@
     }
 
     var cabecalhos = colunasVisiveis.map(function (def) {
-      var th = el("th", {
-        classe: def.classe, texto: def.rotulo, scope: "col",
-        "aria-sort": def.chave === estado.chave ? "ascending" : "none"
-      });
-      if (!def.semOrdenacao) {
-        th.addEventListener("click", function () {
-          if (estado.chave === def.chave) estado.ordem = -estado.ordem;
-          else { estado.chave = def.chave; estado.ordem = 1; }
-          cabecalhos.forEach(function (outro, i) {
-            outro.setAttribute("aria-sort", colunasVisiveis[i].chave === estado.chave
-              ? (estado.ordem === 1 ? "ascending" : "descending") : "none");
-          });
-          desenhar();
-        });
-      } else {
-        th.style.cursor = "default";
+      if (def.semOrdenacao) {
+        return el("th", { classe: def.classe, texto: def.rotulo, scope: "col" });
       }
+
+      var seta = el("i", { classe: "fas fa-sort ordenacao", "aria-hidden": "true" });
+      var th = el("th", {
+        classe: def.classe, scope: "col",
+        "aria-sort": def.chave === estado.chave ? "ascending" : "none"
+      }, [document.createTextNode(def.rotulo), seta]);
+
+      th.addEventListener("click", function () {
+        if (estado.chave === def.chave) estado.ordem = -estado.ordem;
+        else { estado.chave = def.chave; estado.ordem = 1; }
+        cabecalhos.forEach(function (outro, i) {
+          var ativo = colunasVisiveis[i].chave === estado.chave;
+          var ordem = ativo ? (estado.ordem === 1 ? "ascending" : "descending") : "none";
+          if (outro.hasAttribute("aria-sort")) outro.setAttribute("aria-sort", ordem);
+          var glifo = outro.querySelector(".ordenacao");
+          if (glifo) {
+            glifo.className = "fas ordenacao " + (!ativo ? "fa-sort"
+              : ordem === "ascending" ? "fa-sort-up" : "fa-sort-down");
+          }
+        });
+        desenhar();
+      });
       return th;
     });
 
@@ -859,28 +912,30 @@
 
       linhas.forEach(function (c) {
         var alvoFk = c.fk ? fkDaColuna(tabela, c.nome) : null;
-        var marcas = el("td", { classe: "col-marcas" }, [
-          c.pk ? el("span", { classe: "selo-chave selo-pk", texto: "PK", title: "Chave primária" }) : null,
-          c.fk ? el("span", { classe: "selo-chave selo-fk", texto: "FK", title: "Chave estrangeira" }) : null,
-          c.obrigatoria ? el("span", { classe: "selo-chave selo-nn", texto: "NN", title: "Obrigatória (NOT NULL)" }) : null
+        // `data-th` é o rótulo que o DS expõe no layout responsivo da tabela.
+        var marcas = el("td", { classe: "col-marcas", "data-th": "Chaves" }, [
+          c.pk ? tag("PK", "selo-chave selo-pk") : null,
+          c.fk ? tag("FK", "selo-chave selo-fk") : null,
+          c.obrigatoria ? tag("NN", "selo-chave selo-nn") : null
         ]);
 
         var celulas = [
-          el("td", { classe: "col-num", texto: c.no }),
-          el("td", { classe: "col-nome" }, [
+          el("td", { classe: "col-num", texto: c.no, "data-th": "Nº" }),
+          el("td", { classe: "col-nome", "data-th": "Coluna" }, [
             el("a", {
               href: "#/tabela/" + tabela.nome + "?col=" + encodeURIComponent(c.nome),
-              texto: c.nome, style: "color:inherit"
+              texto: c.nome
             })
           ]),
           marcas,
-          el("td", { classe: "col-tipo", texto: c.tipo })
+          el("td", { classe: "col-tipo", texto: c.tipo, "data-th": "Tipo" })
         ];
-        if (temPadrao) celulas.push(el("td", { classe: "col-tipo", texto: c.formula || "" }));
-        celulas.push(el("td", { classe: "col-desc" }, [
-          c.descricao ? document.createTextNode(c.descricao) : el("span", { style: "color:var(--texto-fraco)", texto: "—" }),
-          alvoFk ? el("div", { style: "margin-top:.2rem;font-size:.78rem" }, [
-            document.createTextNode("→ "),
+        if (temPadrao) celulas.push(el("td", { classe: "col-tipo", texto: c.formula || "", "data-th": "Padrão" }));
+        celulas.push(el("td", { classe: "col-desc", "data-th": "Descrição" }, [
+          c.descricao ? document.createTextNode(c.descricao) : el("span", { classe: "col-vazio", texto: "—" }),
+          alvoFk ? el("div", { classe: "col-referencia" }, [
+            icone("long-arrow-alt-right"),
+            document.createTextNode(" "),
             el("a", {
               href: "#/tabela/" + alvoFk.tabela + "?col=" + encodeURIComponent(alvoFk.coluna),
               texto: alvoFk.tabela + "." + alvoFk.coluna
@@ -893,23 +948,32 @@
 
       if (!linhas.length) {
         corpo.appendChild(el("tr", {}, [
-          el("td", { colspan: colunasVisiveis.length, style: "color:var(--texto-fraco)", texto: "Nenhuma coluna corresponde ao filtro." })
+          el("td", { colspan: colunasVisiveis.length, classe: "col-vazio", texto: "Nenhuma coluna corresponde ao filtro." })
         ]));
       }
     }
 
     desenhar();
 
-    var filtro = el("input", {
-      type: "search", classe: "filtro-colunas", placeholder: "Filtrar colunas desta tabela…",
-      "aria-label": "Filtrar colunas desta tabela",
+    var campo = el("input", {
+      type: "search", id: "filtro-colunas", placeholder: "Filtrar colunas desta tabela…",
+      autocomplete: "off",
       oninput: function (ev) { estado.filtro = ev.target.value; desenhar(); }
     });
+    var filtro = el("div", { classe: "br-input has-icon filtro-colunas" }, [
+      el("label", { classe: "sr-only", "for": "filtro-colunas", texto: "Filtrar colunas desta tabela" }),
+      el("div", { classe: "input-icon" }, [icone("filter")]),
+      campo
+    ]);
 
     return {
       filtro: filtro,
+      // Sem a classe .br-table de propósito: o core-init instancia BRTable em
+      // todo .br-table e injeta header/footer próprios, que brigariam com a
+      // ordenação e o filtro daqui. A moldura visual vem do br-card (ADR-004).
       grade: el("div", { classe: "rolagem grade-rolante" }, [
         el("table", { classe: "grade grade-longa" }, [
+          el("caption", { classe: "sr-only", texto: "Colunas da tabela " + tabela.nome }),
           el("thead", {}, [el("tr", {}, cabecalhos)]),
           corpo
         ])
@@ -926,7 +990,7 @@
     var frag = document.createDocumentFragment();
 
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
-      el("h1", { style: "font-family:var(--sans)", texto: meta.titulo }),
+      el("h1", { texto: meta.titulo }),
       el("p", { classe: "descricao-tabela", texto:
         "Versão navegável do dicionário de dados do SINESP CAD 3" })
     ]));
@@ -938,47 +1002,42 @@
       [TABELAS.reduce(function (s, t) { return s + t.indices.length; }, 0), "índices"]
     ];
     frag.appendChild(el("div", { classe: "cartoes" }, cartoes.map(function (c) {
-      return el("div", { classe: "cartao" }, [
-        el("div", { classe: "numero", texto: String(c[0]) }),
-        el("div", { classe: "rotulo", texto: c[1] })
+      return el("div", { classe: "br-card" }, [
+        el("div", { classe: "card-content" }, [
+          el("div", { classe: "numero", texto: String(c[0]) }),
+          el("div", { classe: "rotulo", texto: c[1] })
+        ])
       ]);
     })));
 
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      el("a", { classe: "botao botao-primario", href: "#/mapa", texto: "Ver mapa de relacionamentos" }),
-      el("button", {
-        classe: "botao", texto: "Baixar dicionário completo (JSON)",
-        onclick: function () { baixar("dicionario-cad3.json", JSON.stringify(DADOS, null, 2), "application/json"); }
-      }),
-      el("button", {
-        classe: "botao", texto: "Baixar DDL de todas as tabelas",
-        onclick: function () {
-          var conteudo = TABELAS.map(gerarDDL).join("\n");
-          baixar("cad3-ddl-completo.sql", conteudo, "text/plain");
-        }
-      })
+      el("a", { classe: "br-button primary", href: "#/mapa" }, [
+        icone("project-diagram"), document.createTextNode("Ver mapa de relacionamentos")
+      ]),
+      botao("Baixar dicionário completo (JSON)", "file-code", function () {
+        baixar("dicionario-cad3.json", JSON.stringify(DADOS, null, 2), "application/json");
+      }, "secondary"),
+      botao("Baixar DDL de todas as tabelas", "database", function () {
+        baixar("cad3-ddl-completo.sql", TABELAS.map(gerarDDL).join("\n"), "text/plain");
+      }, "secondary")
     ]));
 
     var grupos = el("div", { classe: "grade-grupos" }, GRUPOS.map(function (grupo) {
-      return el("div", { classe: "grupo-cartao" }, [
-        el("h3", { texto: grupo.nome + " · " + grupo.tabelas.length }),
-        el("ul", {}, grupo.tabelas.slice().sort(function (a, b) {
-          return a.nome.localeCompare(b.nome);
-        }).map(function (t) {
-          return el("li", {}, [
-            linkTabela(t.nome),
-            el("span", { style: "color:var(--texto-fraco);font-size:.74rem", texto: " " + t.colunas.length + " col." })
-          ]);
-        }))
+      return el("div", { classe: "br-card" }, [
+        el("h3", { classe: "card-header", texto: grupo.nome + " · " + grupo.tabelas.length }),
+        el("div", { classe: "card-content" }, [
+          el("ul", {}, grupo.tabelas.slice().sort(function (a, b) {
+            return a.nome.localeCompare(b.nome);
+          }).map(function (t) {
+            return el("li", {}, [
+              linkTabela(t.nome),
+              el("span", { classe: "col-vazio", texto: " " + t.colunas.length + " col." })
+            ]);
+          }))
+        ])
       ]);
     }));
     frag.appendChild(painel("Tabelas por grupo", meta.total_tabelas + " tabelas", grupos));
-
-    // frag.appendChild(el("div", { classe: "rodape" }, [
-    //   el("p", { texto:
-    //     "Gerado em " + meta.gerado_em + " a partir de " + meta.arquivo_fonte +
-    //     ". Conteúdo reproduzido como está no documento original." })
-    // ]));
 
     return frag;
   }
@@ -990,12 +1049,6 @@
     var frag = document.createDocumentFragment();
     var pks = tabela.colunas.filter(function (c) { return c.pk; });
 
-    frag.appendChild(el("div", { classe: "trilha" }, [
-      el("a", { href: "#/", texto: "Início" }),
-      document.createTextNode(" / "),
-      el("span", { texto: tabela.nome })
-    ]));
-
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
       el("h1", {}, [
         tabela.schema ? el("span", { classe: "schema", texto: tabela.schema + "." }) : null,
@@ -1003,30 +1056,33 @@
       ]),
       tabela.descricao ? el("p", { classe: "descricao-tabela", texto: tabela.descricao }) : null,
       el("div", { classe: "pilulas" }, [
-        el("span", { classe: "pilula", texto: plural(tabela.colunas.length, "coluna", "colunas") }),
-        pks.length ? el("span", { classe: "pilula", texto: "PK: " + pks.map(function (c) { return c.nome; }).join(", ") }) : null,
-        el("span", { classe: "pilula", texto: plural(tabela.indices.length, "índice", "índices") }),
-        el("span", { classe: "pilula", texto: tabela.fks_saida.length + " ↗ referencia" }),
-        el("span", { classe: "pilula", texto: tabela.fks_entrada.length + " ↘ referenciada" }),
-        // el("span", { classe: "pilula", texto: "PDF p. " + tabela.paginas.join("–") })
+        tag(plural(tabela.colunas.length, "coluna", "colunas")),
+        pks.length ? tag("PK: " + pks.map(function (c) { return c.nome; }).join(", ")) : null,
+        tag(plural(tabela.indices.length, "índice", "índices")),
+        el("span", { classe: "br-tag" }, [
+          icone("arrow-up"), el("span", { texto: tabela.fks_saida.length + " referencia" })
+        ]),
+        el("span", { classe: "br-tag" }, [
+          icone("arrow-down"), el("span", { texto: tabela.fks_entrada.length + " referenciada" })
+        ])
       ])
     ]));
 
     var grade = tabelaColunas(tabela);
 
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      el("button", { classe: "botao", texto: "DDL (.sql)", onclick: function () {
+      botao("DDL (.sql)", "database", function () {
         baixar(tabela.nome + ".sql", gerarDDL(tabela), "text/plain");
-      } }),
-      el("button", { classe: "botao", texto: "JSON", onclick: function () {
+      }, "secondary"),
+      botao("JSON", "file-code", function () {
         baixar(tabela.nome + ".json", JSON.stringify(tabela, null, 2), "application/json");
-      } }),
-      el("button", { classe: "botao", texto: "CSV das colunas", onclick: function () {
+      }, "secondary"),
+      botao("CSV das colunas", "file-csv", function () {
         baixar(tabela.nome + "-colunas.csv", gerarCSV(tabela), "text/csv");
-      } }),
-      el("button", { classe: "botao", texto: "Mermaid (.mmd)", onclick: function () {
+      }, "secondary"),
+      botao("Mermaid (.mmd)", "project-diagram", function () {
         baixar(tabela.nome + ".mmd", gerarMermaid(tabela), "text/plain");
-      } }),
+      }, "secondary"),
       grade.filtro
     ]));
 
@@ -1035,19 +1091,20 @@
     if (tabela.indices.length) {
       var linhasIndice = tabela.indices.map(function (idx) {
         return el("tr", {}, [
-          el("td", { classe: "col-nome", texto: idx.nome }),
-          el("td", { classe: "col-tipo", texto: idx.estado || "—", title: rotuloEstado(idx.estado) }),
-          el("td", { classe: "col-tipo", texto: idx.expressao || idx.colunas.map(function (c) {
+          el("td", { classe: "col-nome", texto: idx.nome, "data-th": "Nome" }),
+          el("td", { classe: "col-tipo", texto: idx.estado || "—", title: rotuloEstado(idx.estado), "data-th": "Tipo" }),
+          el("td", { classe: "col-tipo", "data-th": "Colunas / expressão", texto: idx.expressao || idx.colunas.map(function (c) {
             return c.nome + (c.ordem && c.ordem !== "ASC" ? " " + c.ordem : "");
           }).join(", ") })
         ]);
       });
       frag.appendChild(painel("Índices", null, el("div", { classe: "rolagem" }, [
         el("table", { classe: "grade" }, [
+          el("caption", { classe: "sr-only", texto: "Índices da tabela " + tabela.nome }),
           el("thead", {}, [el("tr", {}, [
-            el("th", { texto: "Nome", scope: "col", style: "cursor:default" }),
-            el("th", { texto: "Tipo", scope: "col", style: "cursor:default" }),
-            el("th", { texto: "Colunas / expressão", scope: "col", style: "cursor:default" })
+            el("th", { texto: "Nome", scope: "col" }),
+            el("th", { texto: "Tipo", scope: "col" }),
+            el("th", { texto: "Colunas / expressão", scope: "col" })
           ])]),
           el("tbody", {}, linhasIndice)
         ])
@@ -1056,7 +1113,7 @@
 
     if (tabela.constraints.length) {
       frag.appendChild(painel("Constraints", null, el("div", {}, tabela.constraints.map(function (ct) {
-        return el("div", { style: "margin-bottom:.6rem" }, [
+        return el("div", { classe: "mb-3" }, [
           el("div", { classe: "col-nome", texto: [ct.tipo, ct.alvo].filter(Boolean).join(" · ").replace(/\n/g, " ") }),
           el("pre", { classe: "codigo", texto: ct.detalhes.join("\n") })
         ]);
@@ -1067,11 +1124,11 @@
       var conteudoRel = el("div", {});
 
       if (tabela.fks_saida.length) {
-        conteudoRel.appendChild(el("h3", { style: "margin:.2rem 0 .4rem;font-size:.85rem", texto: "Referencia (chaves estrangeiras desta tabela)" }));
+        conteudoRel.appendChild(el("h3", { classe: "text-up-01 mb-1", texto: "Referencia (chaves estrangeiras desta tabela)" }));
         conteudoRel.appendChild(listaFks(tabela.fks_saida, tabela, "saida"));
       }
       if (tabela.fks_entrada.length) {
-        conteudoRel.appendChild(el("h3", { style: "margin:1rem 0 .4rem;font-size:.85rem", texto: "É referenciada por" }));
+        conteudoRel.appendChild(el("h3", { classe: "text-up-01 mt-4 mb-1", texto: "É referenciada por" }));
         conteudoRel.appendChild(listaFks(tabela.fks_entrada, tabela, "entrada"));
       }
       frag.appendChild(painel("Relacionamentos",
@@ -1081,9 +1138,8 @@
       if (diagrama) frag.appendChild(painel("Diagrama de vizinhança", null, diagrama, true));
     }
 
-    frag.appendChild(el("div", { classe: "rodape" }, [
-      el("p", { texto: "Origem: " + DADOS.meta.arquivo_fonte + ", página " + tabela.paginas.join(", ") + "." })
-    ]));
+    frag.appendChild(el("p", { classe: "proveniencia",
+      texto: "Origem: " + DADOS.meta.arquivo_fonte + ", página " + tabela.paginas.join(", ") + "." }));
 
     if (colunaAlvo) {
       setTimeout(function () {
@@ -1103,13 +1159,16 @@
   }
 
   function listaFks(lista, tabela, direcao) {
+    var rotuloTabela = direcao === "saida" ? "Tabela referenciada" : "Tabela de origem";
     return el("div", { classe: "rolagem" }, [
       el("table", { classe: "grade" }, [
+        el("caption", { classe: "sr-only", texto:
+          (direcao === "saida" ? "Tabelas referenciadas por " : "Tabelas que referenciam ") + tabela.nome }),
         el("thead", {}, [el("tr", {}, [
-          el("th", { texto: "Constraint", scope: "col", style: "cursor:default" }),
-          el("th", { texto: direcao === "saida" ? "Tabela referenciada" : "Tabela de origem", scope: "col", style: "cursor:default" }),
-          el("th", { texto: "Colunas", scope: "col", style: "cursor:default" }),
-          el("th", { texto: "Obrigatória", scope: "col", style: "cursor:default" })
+          el("th", { texto: "Constraint", scope: "col" }),
+          el("th", { texto: rotuloTabela, scope: "col" }),
+          el("th", { texto: "Colunas", scope: "col" }),
+          el("th", { texto: "Obrigatória", scope: "col" })
         ])]),
         el("tbody", {}, lista.map(function (fk) {
           // fk.colunas pertencem sempre à tabela de origem do relacionamento;
@@ -1121,10 +1180,10 @@
             ? fk.tabela + "." + fk.colunas_referidas.join(", ")
             : fk.colunas_referidas.join(", ");
           return el("tr", {}, [
-            el("td", { classe: "col-tipo", texto: fk.nome }),
-            el("td", { classe: "col-nome" }, [linkTabela(fk.tabela)]),
-            el("td", { classe: "col-tipo", texto: origem + " → " + destino }),
-            el("td", { classe: "col-tipo", texto: fk.obrigatoria ? "Sim" : "Não" })
+            el("td", { classe: "col-tipo", texto: fk.nome, "data-th": "Constraint" }),
+            el("td", { classe: "col-nome", "data-th": rotuloTabela }, [linkTabela(fk.tabela)]),
+            el("td", { classe: "col-tipo", texto: origem + " → " + destino, "data-th": "Colunas" }),
+            el("td", { classe: "col-tipo", texto: fk.obrigatoria ? "Sim" : "Não", "data-th": "Obrigatória" })
           ]);
         }))
       ])
@@ -1136,45 +1195,52 @@
     var resultados = buscar(consulta);
 
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
-      el("h1", { style: "font-family:var(--sans);font-size:1.3rem" }, [
+      el("h1", { classe: "text-up-03" }, [
         document.createTextNode("Busca por "),
-        el("span", { style: "font-family:var(--mono)", texto: "“" + consulta + "”" })
+        el("span", { classe: "col-nome", texto: "“" + consulta + "”" })
       ]),
       el("p", { classe: "descricao-tabela", texto:
         resultados.length ? plural(resultados.length, "tabela encontrada", "tabelas encontradas")
           : "Nenhum resultado." })
     ]));
 
+    if (!resultados.length) {
+      frag.appendChild(mensagem("info", "Nenhum resultado.",
+        "Nenhuma tabela ou coluna corresponde a “" + consulta + "”."));
+      return frag;
+    }
+
     resultados.slice(0, 60).forEach(function (grupo) {
       var colunas = grupo.colunas.slice(0, 12);
-      frag.appendChild(el("article", { classe: "resultado" }, [
-        el("h3", {}, [
-          el("a", { href: "#/tabela/" + grupo.tabela.nome }, [destacar(grupo.tabela.nome, consulta)]),
-          el("span", { style: "font-family:var(--sans);font-weight:400;font-size:.76rem;color:var(--texto-fraco)",
-            texto: "  " + grupo.tabela.colunas.length + " colunas" })
-        ]),
-        grupo.tabela.descricao
-          ? el("p", { classe: "contexto" }, [destacar(grupo.tabela.descricao, consulta, 220)])
-          : null,
-        colunas.length ? el("ul", {}, colunas.map(function (c) {
-          return el("li", {}, [
-            el("a", {
-              href: "#/tabela/" + grupo.tabela.nome + "?col=" + encodeURIComponent(c.nome),
-              classe: "nome-col"
-            }, [destacar(c.nome, consulta)]),
-            el("span", { classe: "tipo-col", texto: c.tipo }),
-            c.descricao ? el("div", { classe: "contexto" }, [destacar(c.descricao, consulta, 200)]) : null
-          ]);
-        })) : null,
-        grupo.colunas.length > colunas.length
-          ? el("p", { classe: "contexto", texto: "+ " + (grupo.colunas.length - colunas.length) + " outras colunas nesta tabela." })
-          : null
+      frag.appendChild(el("article", { classe: "br-card resultado mb-3" }, [
+        el("div", { classe: "card-content" }, [
+          el("h3", {}, [
+            el("a", { href: "#/tabela/" + grupo.tabela.nome }, [destacar(grupo.tabela.nome, consulta)]),
+            el("span", { classe: "contagem", texto: grupo.tabela.colunas.length + " colunas" })
+          ]),
+          grupo.tabela.descricao
+            ? el("p", { classe: "contexto" }, [destacar(grupo.tabela.descricao, consulta, 220)])
+            : null,
+          colunas.length ? el("ul", {}, colunas.map(function (c) {
+            return el("li", {}, [
+              el("a", {
+                href: "#/tabela/" + grupo.tabela.nome + "?col=" + encodeURIComponent(c.nome),
+                classe: "nome-col"
+              }, [destacar(c.nome, consulta)]),
+              el("span", { classe: "tipo-col", texto: c.tipo }),
+              c.descricao ? el("div", { classe: "contexto" }, [destacar(c.descricao, consulta, 200)]) : null
+            ]);
+          })) : null,
+          grupo.colunas.length > colunas.length
+            ? el("p", { classe: "contexto", texto: "+ " + (grupo.colunas.length - colunas.length) + " outras colunas nesta tabela." })
+            : null
+        ])
       ]));
     });
 
     if (resultados.length > 60) {
-      frag.appendChild(el("p", { classe: "aviso", texto:
-        "Exibindo as 60 tabelas mais relevantes de " + resultados.length + ". Refine a busca para ver o restante." }));
+      frag.appendChild(mensagem("info", "Resultados parciais.",
+        "Exibindo as 60 tabelas mais relevantes de " + resultados.length + ". Refine a busca para ver o restante."));
     }
 
     return frag;
@@ -1188,20 +1254,20 @@
     });
 
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
-      el("h1", { style: "font-family:var(--sans);font-size:1.4rem", texto: "Mapa de relacionamentos" }),
+      el("h1", { texto: "Mapa de relacionamentos" }),
       el("p", { classe: "descricao-tabela", texto: "Passe o mouse para isolar a vizinhança, use a roda para dar zoom, arraste para mover e clique para abrir a tabela." })
     ]));
 
     var svg = montarMapa();
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      el("button", { classe: "botao", texto: "Reiniciar visualização", onclick: function () { svg.reiniciarVista(); } }),
-      el("button", { classe: "botao", texto: "Baixar Mermaid do modelo", onclick: function () {
+      botao("Reiniciar visualização", "compress-arrows-alt", function () { svg.reiniciarVista(); }, "secondary"),
+      botao("Baixar Mermaid do modelo", "project-diagram", function () {
         var linhas = ["erDiagram"];
         ARESTAS.forEach(function (a) {
           linhas.push("  " + a.destino + " ||--o{ " + a.origem + " : " + JSON.stringify(a.nome));
         });
         baixar("cad3-relacionamentos.mmd", linhas.join("\n") + "\n", "text/plain");
-      } })
+      }, "secondary")
     ]));
 
     frag.appendChild(el("div", { classe: "moldura-svg" }, [svg]));
@@ -1209,7 +1275,9 @@
     if (isoladas.length) {
       frag.appendChild(painel("Tabelas sem relacionamentos declarados", isoladas.length + " tabelas",
         el("div", { classe: "pilulas" }, isoladas.map(function (t) {
-          return el("a", { classe: "pilula", href: "#/tabela/" + t.nome, texto: t.nome });
+          return el("a", { classe: "br-tag interaction-select", href: "#/tabela/" + t.nome }, [
+            el("span", { texto: t.nome })
+          ]);
         }))));
     }
 
@@ -1219,10 +1287,15 @@
   function paginaNaoEncontrada(nome) {
     var frag = document.createDocumentFragment();
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
-      el("h1", { style: "font-family:var(--sans)", texto: "Tabela não encontrada" }),
-      el("p", { classe: "descricao-tabela", texto: "Não existe nenhuma tabela chamada “" + nome + "” neste dicionário." })
+      el("h1", { texto: "Tabela não encontrada" })
     ]));
-    frag.appendChild(el("p", {}, [el("a", { href: "#/", texto: "← Voltar ao início" })]));
+    frag.appendChild(mensagem("danger", "Tabela não encontrada.",
+      "Não existe nenhuma tabela chamada “" + nome + "” neste dicionário."));
+    frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
+      el("a", { classe: "br-button primary", href: "#/" }, [
+        icone("home"), document.createTextNode("Voltar ao início")
+      ])
+    ]));
     return frag;
   }
 
@@ -1248,8 +1321,11 @@
 
       listaLateral.appendChild(el("div", { classe: "grupo-titulo", texto: grupo.nome }));
       tabelas.forEach(function (t) {
-        var item = el("a", { classe: "item-tabela", href: "#/tabela/" + t.nome, title: t.descricao || t.nome }, [
-          el("span", { texto: t.nome }),
+        var item = el("a", {
+          classe: "menu-item", role: "treeitem",
+          href: "#/tabela/" + t.nome, title: t.descricao || t.nome
+        }, [
+          el("span", { classe: "content", texto: t.nome }),
           el("span", { classe: "qtd", texto: t.colunas.length })
         ]);
         itensLaterais[t.nome] = item;
@@ -1281,51 +1357,78 @@
     else location.hash = hash;
   }
 
+  /* Trilha no formato br-breadcrumb: o item "Início" é o botão de casa, e a
+     página corrente é um <span aria-current="page">, não um link. */
+  function montarTrilha(atual) {
+    var lista = $("#lista-trilha");
+    limpar(lista);
+
+    lista.appendChild(el("li", { classe: "crumb home" }, [
+      el("a", { classe: "br-button circle", href: "#/" }, [
+        el("span", { classe: "sr-only", texto: "Página inicial" }),
+        icone("home")
+      ])
+    ]));
+
+    if (!atual) return;
+    lista.appendChild(el("li", { classe: "crumb", "data-active": "active" }, [
+      el("i", { classe: "icon fas fa-chevron-right", "aria-hidden": "true" }),
+      el("span", { tabindex: "0", "aria-current": "page", texto: atual })
+    ]));
+  }
+
   function rotear() {
     var bruto = location.hash.replace(/^#/, "") || "/";
     var partes = bruto.split("?");
     var caminho = partes[0].split("/").filter(Boolean);
     var parametros = new URLSearchParams(partes[1] || "");
-    var conteudo = $("#conteudo");
+    var conteudo = $("#main-content");
 
     limpar(conteudo);
     document.title = "Dicionário de Dados — SINESP CAD 3";
 
     if (!caminho.length) {
       conteudo.appendChild(paginaInicial());
+      montarTrilha(null);
       marcarAtual(null);
     } else if (caminho[0] === "tabela" && caminho[1]) {
       var nome = decodeURIComponent(caminho[1]);
       conteudo.appendChild(paginaTabela(nome, parametros.get("col")));
+      montarTrilha(nome);
       marcarAtual(nome);
       if (POR_NOME[nome]) document.title = nome + " — Dicionário CAD 3";
     } else if (caminho[0] === "busca") {
       var consulta = parametros.get("q") || "";
       $("#busca-global").value = consulta;
       conteudo.appendChild(paginaBusca(consulta));
+      montarTrilha("Busca");
       marcarAtual(null);
       document.title = "Busca: " + consulta + " — Dicionário CAD 3";
     } else if (caminho[0] === "mapa") {
       conteudo.appendChild(paginaMapa());
+      montarTrilha("Mapa de relacionamentos");
       marcarAtual(null);
       document.title = "Mapa de relacionamentos — Dicionário CAD 3";
     } else {
       conteudo.appendChild(paginaNaoEncontrada(bruto));
+      montarTrilha("Não encontrada");
       marcarAtual(null);
     }
 
     if (!parametros.get("col")) window.scrollTo(0, 0);
-    fecharLateral();
+    fecharMenu();
   }
 
   /* ------------------------------------------------------------------ *
    * Interações globais
    * ------------------------------------------------------------------ */
 
-  function fecharLateral() {
-    $("#lateral").classList.remove("aberta");
-    $("#veu").hidden = true;
-    $("#alternar-menu").setAttribute("aria-expanded", "false");
+  /* Fecha o br-menu depois de navegar. Quem controla o estado é o BRMenu do
+     core, que alterna a classe `active`; no desktop o menu fica aberto por CSS
+     e essa classe nem entra em jogo. */
+  function fecharMenu() {
+    var menu = $("#main-navigation");
+    if (menu) menu.classList.remove("active");
   }
 
   function iniciar() {
@@ -1359,29 +1462,17 @@
       if (ev.key === "/" && !digitando) { ev.preventDefault(); campoBusca.focus(); campoBusca.select(); }
       if (ev.key === "Escape") {
         if (document.activeElement === campoBusca) campoBusca.blur();
-        fecharLateral();
+        fecharMenu();
       }
     });
 
-    $("#alternar-menu").addEventListener("click", function () {
-      var lateral = $("#lateral");
-      var abrindo = !lateral.classList.contains("aberta");
-      lateral.classList.toggle("aberta", abrindo);
-      $("#veu").hidden = !abrindo;
-      this.setAttribute("aria-expanded", String(abrindo));
-    });
-    $("#veu").addEventListener("click", fecharLateral);
-
-    var salvo = null;
-    try { salvo = localStorage.getItem("tema-cad3"); } catch (e) { /* modo privado */ }
-    var preferido = salvo || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro");
-    document.documentElement.setAttribute("data-tema", preferido);
-
-    $("#alternar-tema").addEventListener("click", function () {
-      var novo = document.documentElement.getAttribute("data-tema") === "escuro" ? "claro" : "escuro";
-      document.documentElement.setAttribute("data-tema", novo);
-      try { localStorage.setItem("tema-cad3", novo); } catch (e) { /* modo privado */ }
-    });
+    // Proveniência dos dados no rodapé institucional.
+    var fonte = $("#rodape-fonte");
+    if (fonte) {
+      fonte.textContent = "Gerado em " + DADOS.meta.gerado_em + " a partir de " +
+        DADOS.meta.arquivo_fonte + " · " + DADOS.meta.total_tabelas + " tabelas, " +
+        DADOS.meta.total_colunas + " colunas.";
+    }
 
     window.addEventListener("hashchange", rotear);
     rotear();
