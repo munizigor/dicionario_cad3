@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'docs: registra análise e plano da adequação ao Padrão Digital *)"
+    ]
+  }
+}
