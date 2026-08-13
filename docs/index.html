@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dicionário de Dados — SINESP CAD 3</title>
+<meta name="description" content="Dicionário de dados navegável do schema CAD_OCORRENCIA do SINESP CAD 3.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗂️</text></svg>">
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo">
+  <button class="botao-icone alternar-menu" id="alternar-menu" aria-label="Alternar lista de tabelas" aria-expanded="false">☰</button>
+
+  <a class="marca" href="#/">
+    <span class="marca-titulo">Dicionário de Dados</span>
+    <span class="marca-sub">SINESP CAD 3 · CAD_OCORRENCIA</span>
+  </a>
+
+  <form class="busca" id="form-busca" role="search">
+    <label class="sr" for="busca-global">Buscar tabelas e colunas</label>
+    <input type="search" id="busca-global" placeholder="Buscar tabela, coluna ou descrição…" autocomplete="off" spellcheck="false">
+    <kbd class="atalho">/</kbd>
+  </form>
+
+  <nav class="acoes-topo">
+    <a class="botao-link" href="#/mapa">Mapa</a>
+    <button class="botao-icone" id="alternar-tema" aria-label="Alternar tema claro/escuro" title="Alternar tema">◐</button>
+  </nav>
+</header>
+
+<div class="corpo">
+  <aside class="lateral" id="lateral" aria-label="Lista de tabelas">
+    <div class="lateral-filtro">
+      <label class="sr" for="filtro-tabelas">Filtrar tabelas</label>
+      <input type="search" id="filtro-tabelas" placeholder="Filtrar tabelas…" autocomplete="off" spellcheck="false">
+      <span class="contador" id="contador-tabelas"></span>
+    </div>
+    <nav class="lista-tabelas" id="lista-tabelas"></nav>
+  </aside>
+
+  <main id="conteudo" tabindex="-1"></main>
+</div>
+
+<div class="veu" id="veu" hidden></div>
+
+<script src="dados.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
