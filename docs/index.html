@@ -5,48 +5,204 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dicionário de Dados — SINESP CAD 3</title>
 <meta name="description" content="Dicionário de dados navegável do schema CAD_OCORRENCIA do SINESP CAD 3.">
+
+<!-- Padrão Digital de Governo — assets vendorizados por tools/baixar_assets_ds.py.
+     Nada aqui vem de CDN: ver documentacao/decisoes.md, ADR-003. A fonte Raleway,
+     que o template oficial carrega do Google Fonts, é apenas fallback da Rawline —
+     como a Rawline está local, ela nunca chega a ser requisitada. -->
+<link rel="stylesheet" href="assets/fonts/rawline/css/rawline.css">
+<link rel="stylesheet" href="assets/govbr/core.min.css">
+<link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗂️</text></svg>">
+
+<!-- TODO: trocar pelo favicon do órgão antes de publicar. -->
+<link rel="icon" href="assets/img/govbr.png">
 </head>
 <body>
-<a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-<header class="topo">
-  <button class="botao-icone alternar-menu" id="alternar-menu" aria-label="Alternar lista de tabelas" aria-expanded="false">☰</button>
+<!-- ==================================================================== -->
+<!-- Barra do Governo Federal.                                            -->
+<!-- Web component oficial, servido por barra.sistema.gov.br. Não tem     -->
+<!-- documentação pública e não é vendorizável; se sair do ar, este bloco -->
+<!-- inteiro pode ser removido sem afetar o resto do site.                -->
+<!-- TODO: preencher `titulo` com o nome do órgão antes de publicar.      -->
+<!-- ==================================================================== -->
+<script type="module" src="https://barra.sistema.gov.br/v1/barra-govbr-wc.iife.js"></script>
+<barra-govbr
+  id="barra-govbr"
+  titulo=""
+  linklogo="https://www.gov.br/pt-br"
+  idiomaativo="pt"
+  contrastactive="false"
+  linksdosistema='[{"title":"Órgãos do Governo","href":"https://www.gov.br/pt-br/orgaos-do-governo"},{"title":"Acesso à Informação","href":"https://www.gov.br/acessoainformacao/pt-br"},{"title":"Legislação","href":"http://www4.planalto.gov.br/legislacao"},{"title":"Acessibilidade","href":"https://www.gov.br/governodigital/pt-br/acessibilidade-digital"}]'>
+</barra-govbr>
 
-  <a class="marca" href="#/">
-    <span class="marca-titulo">Dicionário de Dados</span>
-    <span class="marca-sub">SINESP CAD 3 · CAD_OCORRENCIA</span>
-  </a>
+<div class="template-base">
 
-  <form class="busca" id="form-busca" role="search">
-    <label class="sr" for="busca-global">Buscar tabelas e colunas</label>
-    <input type="search" id="busca-global" placeholder="Buscar tabela, coluna ou descrição…" autocomplete="off" spellcheck="false">
-    <kbd class="atalho">/</kbd>
-  </form>
-
-  <nav class="acoes-topo">
-    <a class="botao-link" href="#/mapa">Mapa</a>
-    <button class="botao-icone" id="alternar-tema" aria-label="Alternar tema claro/escuro" title="Alternar tema">◐</button>
+  <nav class="br-skiplink" role="menubar">
+    <a class="br-item" href="#main-content" role="menuitem" accesskey="1">Ir para o conteúdo <span aria-hidden="true">(1/4)</span> <span aria-hidden="true" class="br-tag text ml-1">1</span></a>
+    <a class="br-item" href="#header-navigation" role="menuitem" accesskey="2">Ir para o menu <span aria-hidden="true">(2/4)</span> <span aria-hidden="true" class="br-tag text ml-1">2</span></a>
+    <a class="br-item" href="#main-searchbox" role="menuitem" accesskey="3">Ir para a busca <span aria-hidden="true">(3/4)</span> <span aria-hidden="true" class="br-tag text ml-1">3</span></a>
+    <a class="br-item" href="#footer" role="menuitem" accesskey="4">Ir para o rodapé <span aria-hidden="true">(4/4)</span> <span aria-hidden="true" class="br-tag text ml-1">4</span></a>
   </nav>
-</header>
 
-<div class="corpo">
-  <aside class="lateral" id="lateral" aria-label="Lista de tabelas">
-    <div class="lateral-filtro">
-      <label class="sr" for="filtro-tabelas">Filtrar tabelas</label>
-      <input type="search" id="filtro-tabelas" placeholder="Filtrar tabelas…" autocomplete="off" spellcheck="false">
-      <span class="contador" id="contador-tabelas"></span>
+  <header class="br-header" id="header" data-sticky="data-sticky">
+    <div class="container-lg">
+
+      <div class="header-top">
+        <div class="header-logo">
+          <img src="assets/img/govbr.png" alt="gov.br">
+          <span class="br-divider vertical"></span>
+          <!-- TODO: substituir pelo nome do órgão antes de publicar. -->
+          <div class="header-sign">Órgão responsável</div>
+        </div>
+
+        <div class="header-actions">
+          <div class="header-links dropdown">
+            <button class="br-button circle small" type="button" data-toggle="dropdown" aria-label="Abrir Acesso Rápido">
+              <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+            </button>
+            <div class="br-list">
+              <div class="header">
+                <div class="title">Acesso Rápido</div>
+              </div>
+              <a class="br-item" href="#/">Início</a>
+              <a class="br-item" href="#/mapa">Mapa de relacionamentos</a>
+            </div>
+          </div>
+          <span class="br-divider vertical mx-half mx-sm-1"></span>
+          <div class="header-search-trigger">
+            <button class="br-button circle" type="button" aria-label="Abrir Busca" data-toggle="search" data-target=".header-search">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-bottom">
+        <div class="header-menu">
+          <div class="header-menu-trigger" id="header-navigation">
+            <button class="br-button small circle" type="button" aria-label="Menu"
+                    data-toggle="menu" data-target="#main-navigation" id="navigation">
+              <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="header-info">
+            <div class="header-title">Dicionário de Dados</div>
+            <div class="header-subtitle">SINESP CAD 3 · schema CAD_OCORRENCIA</div>
+          </div>
+        </div>
+
+        <div class="header-search" id="main-searchbox">
+          <!-- O <form> existe para que o Enter dispare a busca e para expor
+               role="search"; o CSS o torna transparente ao layout do DS. -->
+          <form class="busca-form" id="form-busca" role="search">
+            <div class="br-input has-icon">
+              <label for="busca-global">Buscar tabela, coluna ou descrição</label>
+              <div class="input-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
+              <input id="busca-global" type="search" placeholder="Buscar tabela, coluna ou descrição…"
+                     autocomplete="off" spellcheck="false">
+              <button class="br-button circle small" type="submit" aria-label="Pesquisar">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+          </form>
+          <button class="br-button circle search-close ml-1" type="button" aria-label="Fechar Busca" data-dismiss="search">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
     </div>
-    <nav class="lista-tabelas" id="lista-tabelas"></nav>
-  </aside>
+  </header>
 
-  <main id="conteudo" tabindex="-1"></main>
+  <main class="d-flex flex-fill mb-5" id="main">
+    <div class="container-lg d-flex">
+      <div class="row">
+
+        <!-- br-menu no modo offcanvas padrão: no mobile o DS cuida de tudo
+             (véu, botão de fechar, foco). A partir de 1280px o CSS o fixa
+             aberto — ver ADR-005. O modificador `push` não serve aqui porque
+             esconde o véu e o cabeçalho do menu, deixando o mobile sem forma
+             de fechar. -->
+        <div class="br-menu" id="main-navigation">
+          <div class="menu-container">
+            <div class="menu-panel">
+
+              <div class="menu-header">
+                <div class="menu-title">
+                  <span>Tabelas do dicionário</span>
+                </div>
+                <div class="menu-close">
+                  <button class="br-button circle" type="button" aria-label="Fechar o menu" data-dismiss="menu">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filtro incremental das 71 tabelas. O br-menu do DS não prevê
+                   busca interna, então este bloco é próprio, montado com o
+                   br-input do padrão. -->
+              <div class="menu-filtro">
+                <div class="br-input has-icon">
+                  <label for="filtro-tabelas">Filtrar tabelas</label>
+                  <div class="input-icon"><i class="fas fa-filter" aria-hidden="true"></i></div>
+                  <input id="filtro-tabelas" type="search" placeholder="Filtrar tabelas…"
+                         autocomplete="off" spellcheck="false">
+                </div>
+                <span class="contador" id="contador-tabelas" aria-live="polite"></span>
+              </div>
+
+              <nav class="menu-body" id="lista-tabelas" role="tree" aria-label="Lista de tabelas"></nav>
+
+            </div>
+            <div class="menu-scrim" data-dismiss="menu" tabindex="0"></div>
+          </div>
+        </div>
+
+        <div class="col mb-5">
+          <nav class="br-breadcrumb" id="trilha" aria-label="Breadcrumbs">
+            <ol class="crumb-list" id="lista-trilha" role="list"></ol>
+          </nav>
+          <div class="main-content pl-sm-3 mt-4" id="main-content" tabindex="-1"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="br-footer pt-3" id="footer">
+    <div class="container-lg">
+      <div class="info">
+        <!-- TODO: substituir pela assinatura do órgão antes de publicar. -->
+        <div class="text-down-01 text-medium pb-2">Órgão responsável</div>
+        <div class="text-down-01 pb-2" id="rodape-fonte"></div>
+        <div class="text-down-01 text-medium pb-3">
+          Conteúdo reproduzido como está no documento original, sob a
+          <strong><a href="https://creativecommons.org/licenses/by-nd/3.0/deed.pt_BR" rel="license">licença Creative Commons Atribuição-SemDerivações 3.0</a>.</strong>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 </div>
 
-<div class="veu" id="veu" hidden></div>
+<!-- ==================================================================== -->
+<!-- VLibras — tradução para Libras. Snippet do manual oficial do widget. -->
+<!-- ==================================================================== -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
 
+<!-- dados.js e app.js primeiro: o app monta o menu e a trilha, e só então o
+     core-init instancia os componentes do DS sobre o DOM já completo. -->
 <script src="dados.js"></script>
 <script src="app.js"></script>
+<script src="assets/govbr/core-init.min.js"></script>
 </body>
 </html>

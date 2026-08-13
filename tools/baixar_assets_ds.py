@@ -34,6 +34,10 @@ BASE_CORE = "https://cdn.jsdelivr.net/npm/@govbr-ds/core@%s/dist" % VERSAO_CORE
 BASE_RAWLINE = "https://cdngovbr-ds.estaleiro.serpro.gov.br/design-system/fonts/rawline"
 BASE_FA = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/%s" % VERSAO_FONTAWESOME
 
+# Assinatura visual gov.br. O core não empacota imagens; esta é a marca servida
+# pelo tema oficial do portal gov.br.
+URL_LOGO = "https://www.gov.br/++theme++padrao_govbr/img/govbr-colorido-b.png"
+
 # Pesos da Rawline efetivamente usados pelo site e pelos componentes do core.
 # Cada variante custa ~80 KB, então os extremos (100/200/800/900) ficam de fora:
 # só aparecem em classes utilitárias que este site não usa, e na falta delas o
@@ -150,6 +154,11 @@ def baixar_fontawesome():
     return total
 
 
+def baixar_logo():
+    print("\nAssinatura visual")
+    return gravar(ASSETS / "img" / "govbr.png", baixar(URL_LOGO))
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -158,7 +167,7 @@ def main():
 
     print("Baixando os assets do Padrão Digital de Governo para docs/assets/")
     try:
-        total = baixar_core() + baixar_rawline() + baixar_fontawesome()
+        total = baixar_core() + baixar_rawline() + baixar_fontawesome() + baixar_logo()
     except ErroDownload as erro:
         print("\nFalhou: %s" % erro)
         return 1
