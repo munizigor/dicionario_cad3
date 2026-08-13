@@ -10,10 +10,10 @@ que muda é a camada de apresentação e a acessibilidade.
 - Template base do DS: `br-skiplink` com `accesskey` 1–4, `br-header` com logo gov.br e busca,
   `br-menu`, `br-breadcrumb` e `br-footer`.
 - Tipografia Rawline e iconografia Font Awesome 5.11.2.
-- Barra do Governo Federal (`barra.sistema.gov.br`) e VLibras.
+- VLibras.
 - Rodapé institucional com proveniência dos dados e licença de uso.
 - `tools/baixar_assets_ds.py` — baixa e atualiza os assets do DS com as versões fixadas.
-- `tools/verificar_conformidade.py` — 73 checagens estáticas de aderência ao padrão.
+- `tools/verificar_conformidade.py` — 71 checagens estáticas de aderência ao padrão.
 - `documentacao/` com processo de negócio, arquitetura e seis ADRs.
 
 ### Alterado
@@ -28,9 +28,8 @@ que muda é a camada de apresentação e a acessibilidade.
 - Skip link, drawer e véu artesanais, substituídos pelos componentes do padrão.
 
 ### Pendências antes da publicação oficial
-Quatro `TODO` marcados no `index.html`: nome do órgão no cabeçalho, no rodapé e no atributo `titulo`
-da `<barra-govbr>`, e o favicon institucional.
+Falta trocar o favicon do `index.html` pelo do órgão.
 
 ### Nota
-O site deixou de funcionar 100% offline por `file://`: a barra do Governo Federal e o VLibras são
-serviços vivos e não vendorizáveis. Sem rede os dois somem e todo o resto continua funcionando.
+O site deixou de funcionar 100% offline por `file://`: o VLibras é serviço vivo e não vendorizável.
+Sem rede ele some e todo o resto continua funcionando.

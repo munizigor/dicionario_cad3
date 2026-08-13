@@ -27,7 +27,9 @@
       "Bash(grep -o -E '.{80}\\\\{mostrarDados:[^}]{0,120}\\\\}.{0,80}' barra.js)",
       "Bash(python -m http.server -d docs 8000 --bind 127.0.0.1)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — index.html servido em %{size_download} bytes\\\\n\" http://127.0.0.1:8000/index.html)",
-      "Bash(git commit -q -m 'fix: elimina o spinner preso na barra do Governo Federal *)"
+      "Bash(git commit -q -m 'fix: elimina o spinner preso na barra do Governo Federal *)",
+      "Bash(git commit -q -m 'fix: painel do menu preenche a largura reservada *)",
+      "Bash(git commit -q -m 'feat!: remove a barra do Governo Federal \\(ADR-007\\) *)"
     ]
   }
 }

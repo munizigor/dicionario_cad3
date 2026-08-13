@@ -17,7 +17,7 @@ Sem alternativas. Desvios exigem justificativa técnica e decisão do Navegador.
 ## Comandos
 
 ```sh
-python tools/verificar_conformidade.py          # testes — 73 checagens, sai 1 se falhar
+python tools/verificar_conformidade.py          # testes — 71 checagens, sai 1 se falhar
 python -m http.server -d docs 8000              # rodar — http://localhost:8000
 python tools/baixar_assets_ds.py                # atualizar assets do DS
 python tools/extrair_pdf.py                     # regerar dados a partir do PDF
@@ -82,5 +82,5 @@ Monitor Plus ou WAVE.
 
 ## Pendências de publicação
 
-Quatro `TODO` no `index.html`: nome do órgão (cabeçalho, rodapé, `titulo` da `<barra-govbr>`) e o
-favicon institucional.
+Falta trocar o favicon do `index.html` pelo do órgão. A barra do Governo Federal **não** deve ser
+reintroduzida sem revisar o ADR-007 — o verificador falha se ela voltar.

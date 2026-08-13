@@ -10,7 +10,7 @@ Referência: `.claude/PROBLEMA.md` · plano de execução detalhado em
 | Decisão | Escolha |
 |---|---|
 | Nível | Padrão Mínimo + componentes `br-*`; CSS próprio só na grade densa e nos diagramas |
-| Identidade | Institucional — logo gov.br, barra do Governo Federal, VLibras, assinatura do órgão |
+| Identidade | Institucional — logo gov.br, VLibras, assinatura do órgão (barra removida: ADR-007) |
 | Órgão | Placeholder `TODO`, preenchido antes da publicação |
 | Assets | Vendorizados em `docs/assets/` |
 | Tema escuro | Removido |
@@ -40,7 +40,7 @@ Referência: `.claude/PROBLEMA.md` · plano de execução detalhado em
 - [x] `core.min.css` e `core-init.min.js` do `@govbr-ds/core@3.7.0`
 - [x] Rawline (pesos usados) com os caminhos relativos corrigidos
 - [x] Font Awesome 5.11.2 (CSS + webfonts usados)
-- [x] Nenhuma referência remota no `index.html` além de barra gov.br e VLibras
+- [x] Nenhuma referência remota no `index.html` além do VLibras
 
 ### S3 — Template base do DS
 > Como usuário de serviços gov.br, quero o cabeçalho, o menu e o rodapé que já conheço.
@@ -67,13 +67,13 @@ Referência: `.claude/PROBLEMA.md` · plano de execução detalhado em
 - [x] Atalho `/`, `Escape`, debounce de 220 ms e roteamento por hash preservados
 
 ### S6 — Elementos institucionais
-> Como pessoa surda, quero acionar o VLibras; como cidadão, quero a barra do Governo Federal.
-- [x] `<barra-govbr>` isolada em bloco removível, com o risco documentado
+> Como pessoa surda, quero acionar o VLibras.
+- [x] Barra do Governo Federal avaliada e descartada (ADR-007)
 - [x] VLibras com o snippet do manual oficial (1 argumento)
 - [x] `br-footer` com assinatura do órgão, licença e proveniência dos dados
 
 ### S7 — Verificação e documentação
-- [x] `verificar_conformidade.py` verde (73/73), com saída colada como evidência
+- [x] `verificar_conformidade.py` verde (71/71), com saída colada como evidência
 - [x] Sintaxe do `app.js` validada (compila; erro apenas de runtime por falta de `window`)
 - [x] `README.md` atualizado (tema escuro sai, assets e conformidade entram)
 - [x] `documentacao/` inicial + `documentacao/CHANGELOG.md`
@@ -96,7 +96,7 @@ renderização continua por conferir. Roteiro proposto, com `python -m http.serv
 4. **Responsivo:** 360 · 991 · 992 · 1279 · 1280 · 1600px.
 5. **Teclado:** Tab desde o topo, os quatro `accesskey`, `/` para focar a busca, `Escape`,
    ordenação da grade anunciando `aria-sort`.
-6. **Institucional:** barra do Governo Federal carregando e botão do VLibras aparecendo.
+6. **Institucional:** botão do VLibras aparecendo.
 7. **Sem rede:** DevTools em offline — só a barra e o VLibras devem sumir.
 8. **Acessibilidade:** axe DevTools ou Pa11y contra WCAG 2.2 AA.
 

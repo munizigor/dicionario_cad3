@@ -1467,13 +1467,8 @@
       }
     });
 
-    // Proveniência dos dados no rodapé institucional.
-    var fonte = $("#rodape-fonte");
-    if (fonte) {
-      fonte.textContent = "Gerado em " + DADOS.meta.gerado_em + " a partir de " +
-        DADOS.meta.arquivo_fonte + " · " + DADOS.meta.total_tabelas + " tabelas, " +
-        DADOS.meta.total_colunas + " colunas.";
-    }
+    // A proveniência dos dados fica no fim de cada página de tabela ("Origem:
+    // <arquivo>, página N"), não no rodapé institucional.
 
     window.addEventListener("hashchange", rotear);
     rotear();

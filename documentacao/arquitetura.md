@@ -70,7 +70,7 @@ verificador para isso na seção seguinte.
 ## Verificação
 
 ```sh
-python tools/verificar_conformidade.py     # 73 checagens; sai 1 se alguma falhar
+python tools/verificar_conformidade.py     # 71 checagens; sai 1 se alguma falhar
 python -m http.server -d docs 8000         # http://localhost:8000
 ```
 
@@ -109,11 +109,11 @@ python tools/verificar_conformidade.py
 
 ## Dependências de rede em produção
 
-O site funciona sem rede, com uma exceção declarada: a barra do Governo Federal
-(`barra.sistema.gov.br`) e o VLibras (`vlibras.gov.br`) são serviços vivos e não vendorizáveis
-(ADR-003). Sem rede, os dois somem e todo o resto continua funcionando — dados, busca, filtros,
-ordenação, diagramas e exportações — porque `dados.js` é embutido e não há `fetch` em lugar nenhum.
+O site funciona sem rede, com uma exceção declarada: o VLibras (`vlibras.gov.br`) é serviço vivo e
+não vendorizável (ADR-003). Sem rede ele some e todo o resto continua funcionando — dados, busca,
+filtros, ordenação, diagramas e exportações — porque `dados.js` é embutido e não há `fetch` em lugar
+nenhum.
 
-A `<barra-govbr>` merece atenção: não tem documentação pública, licença declarada nem política de
-versionamento além do `/v1/` no caminho. Está isolada num bloco único do `index.html` e pode ser
-removida inteira sem afetar nada.
+A barra do Governo Federal chegou a ser adotada e foi removida (ADR-007): sem documentação, sem
+licença pública e com um botão de login que trava em carregamento permanente num site sem
+autenticação.

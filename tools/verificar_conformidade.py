@@ -34,8 +34,8 @@ ANCORAS_SKIPLINK = [
     ("4", "footer", "Ir para o rodapé"),
 ]
 
-# Únicos hosts remotos aceitos: são serviços vivos, não vendorizáveis (ADR-003).
-HOSTS_PERMITIDOS = ("barra.sistema.gov.br", "vlibras.gov.br")
+# Único host remoto aceito: o VLibras é serviço vivo, não vendorizável (ADR-003).
+HOSTS_PERMITIDOS = ("vlibras.gov.br",)
 
 # Arquivos que precisam existir vendorizados em docs/assets/. Os CSS de fonte
 # ficam sob `css/` porque referenciam `../font/` e `../webfonts/` — a estrutura
@@ -288,11 +288,14 @@ def verificar_assets(rel, doc):
 def verificar_institucional(rel, doc, fonte_index):
     g = rel.grupo("Elementos institucionais")
 
-    rel.checar(g, doc.por_tag("barra-govbr"), "<barra-govbr> presente (barra do Governo Federal)")
-    rel.checar(g, "barra.sistema.gov.br" in fonte_index,
-               "barra carregada de barra.sistema.gov.br (a legada foi descontinuada)")
+    # A barra do Governo Federal foi descartada (ADR-007). As duas checagens
+    # abaixo existem para que ela não volte por cópia de exemplo: a legada está
+    # oficialmente descontinuada, e a atual não tem documentação nem licença
+    # pública. Se um dia a decisão mudar, é aqui que se inverte.
+    rel.checar(g, not doc.por_tag("barra-govbr"),
+               "<barra-govbr> ausente (decisão do ADR-007)")
     rel.checar(g, "barra.brasil.gov.br" not in fonte_index,
-               "barra legada barra.brasil.gov.br ausente")
+               "barra legada barra.brasil.gov.br ausente (descontinuada oficialmente)")
 
     rel.checar(g, "vlibras-plugin.js" in fonte_index, "VLibras presente")
     rel.checar(g, "vw-access-button" in fonte_index, "botão de acesso do VLibras presente")

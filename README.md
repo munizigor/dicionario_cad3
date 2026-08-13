@@ -22,8 +22,8 @@ gerada a partir do PDF de 87 páginas exportado pelo Oracle SQL Developer Data M
 ## Padrão Digital de Governo
 
 O site segue o [Padrão Digital de Governo](https://www.gov.br/ds/home): cabeçalho e rodapé oficiais,
-tipografia Rawline, paleta e componentes do design system, barra do Governo Federal, VLibras e skip
-link com os atalhos de teclado 1 a 4. Alvo de acessibilidade: **WCAG 2.2 A + AA** (ABNT NBR
+tipografia Rawline, paleta e componentes do design system, VLibras e skip link com os atalhos de
+teclado 1 a 4. Alvo de acessibilidade: **WCAG 2.2 A + AA** (ABNT NBR
 17225:2025).
 
 Os arquivos do design system são **vendorizados** em `docs/assets/` — o site não depende de nenhum
@@ -33,14 +33,13 @@ CDN. Para verificar a aderência:
 python3 tools/verificar_conformidade.py
 ```
 
-> **Antes de publicar oficialmente:** há quatro `TODO` no `docs/index.html` — o nome do órgão no
-> cabeçalho, no rodapé e no atributo `titulo` da barra gov.br, e o favicon institucional.
+> **Antes de publicar oficialmente:** falta trocar o favicon do `docs/index.html` pelo do órgão.
 
 ## Como usar
 
 O site é estático e não depende de servidor. Os dados vão embutidos em `docs/dados.js` (e não
 carregados via `fetch`), então busca, filtros, diagramas e exportações funcionam mesmo sem rede — só
-a barra do Governo Federal e o VLibras precisam de conexão, por serem serviços vivos.
+o VLibras precisa de conexão, por ser um serviço vivo.
 
 Para publicar no GitHub Pages: **Settings → Pages → Source: Deploy from a branch**, e escolher a
 branch com a pasta `/docs`.

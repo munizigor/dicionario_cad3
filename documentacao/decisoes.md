@@ -45,7 +45,7 @@ um trabalho de CSS, não de arquitetura.
 
 ---
 
-## ADR-003 — Assets vendorizados; barra gov.br e VLibras permanecem remotos
+## ADR-003 — Assets vendorizados; o VLibras permanece remoto
 
 **Data:** 2026-08-13 · **Status:** aceita
 
@@ -65,19 +65,8 @@ um snapshot seria congelar um serviço que deve evoluir.
 some a barra e some o widget do VLibras. Todo o resto — dados, busca, filtros, diagramas,
 exportações — continua funcionando, porque não há `fetch` em lugar nenhum.
 
-**Nota sobre a configuração da `<barra-govbr>`.** O componente não tem documentação pública; o que se
-sabe dele veio da análise do bundle. Dois pontos que custaram tempo e valem registro:
-
-- O atributo `class` **não é estilo** — é um saco de feature flags lido por `includes()`. As
-  reconhecidas são `width100`, `shadow-none`, `no-cookie`, `no-login`, `show-contrast-toggle` e
-  `cta-login-disabled`. Usamos `no-login cta-login-disabled` porque o site é público e não autentica.
-- Sem `no-login`, o botão "Entrar" fica **com um spinner girando indefinidamente**. Não é falha de
-  rede nem de CORS: o estado de sessão nasce `undefined` e só sai disso com o atributo `logado`; a
-  flag de carregamento é `typeof sessão === "undefined"`, sem timeout nem fallback. A alternativa
-  seria `logado="false"`, que mantém o botão visível e funcional — não é o caso aqui.
-- O atributo `linksdosistema`, que aparece no HTML do portal gov.br em produção, **não existe** neste
-  componente e é ignorado em silêncio. O nome real é `menulinks`. Como a barra já traz os links
-  institucionais padrão e filtra duplicados, o atributo foi simplesmente removido.
+A barra do Governo Federal acabou removida — ver ADR-007. O VLibras permanece como única dependência
+remota.
 
 ---
 
@@ -164,3 +153,44 @@ Padrão Mínimo pede paleta oficial aplicada por função.
 
 **Consequências.** Perda de funcionalidade existente, decidida pelo Navegador. Se o DS v4 trouxer
 dark mode nativo, reintroduzir passa a ser trivial.
+
+---
+
+## ADR-007 — A barra do Governo Federal não é usada
+
+**Data:** 2026-08-13 · **Status:** aceita · **Substitui** parte do ADR-003
+
+**Contexto.** A barra do Governo Federal foi incluída na adequação inicial como elemento de
+identidade institucional. Na primeira abertura em navegador ela apresentou um botão "Entrar" com
+spinner girando indefinidamente, o que levou a uma análise do bundle — o componente não tem
+documentação pública.
+
+**Decisão.** Remover a `<barra-govbr>` do site.
+
+**Justificativa.** O que a análise revelou pesa contra mantê-la num site institucional que precisa
+ficar estável por anos:
+
+- **Sem documentação, sem licença, sem versionamento declarado.** O componente não consta no
+  gov.br/ds, na wiki do DS nem no npm. Todo o conhecimento sobre ele veio de engenharia reversa do
+  bundle e do HTML do portal gov.br em produção. Não há contrato de estabilidade.
+- **Comportamento-armadilha.** Sem a flag `no-login`, o botão de entrar trava em carregamento
+  permanente: o estado de sessão nasce `undefined`, a flag de carregamento é literalmente
+  `typeof sessão === "undefined"`, e não há timeout nem fallback. Um site público sem autenticação
+  cai nesse estado por padrão.
+- **API enganosa.** O atributo `class` não é estilo, é um saco de feature flags lido por
+  `includes()`. E o `linksdosistema`, que aparece no HTML do portal gov.br em produção, **não
+  existe** no componente — é ignorado em silêncio; o nome real é `menulinks`. Copiar o markup do
+  portal, que é a única fonte disponível, produz configuração que não funciona.
+- **Ela não é exigida.** A barra não está entre os oito itens do Padrão Mínimo. Cabeçalho com logo
+  gov.br, rodapé, tipografia, paleta, botões, formulários, iconografia e responsividade continuam
+  atendidos.
+
+**Consequências.** O site perde os links institucionais do governo, o seletor de idioma e o toggle de
+alto contraste que a barra oferecia. A acessibilidade não fica desamparada: o VLibras permanece, e o
+alvo de WCAG 2.2 AA é atendido pelo próprio design system.
+
+O VLibras passa a ser a **única** dependência remota do site.
+
+Se a barra ganhar documentação e licença públicas, reverter é barato — o
+`tools/verificar_conformidade.py` tem duas checagens que hoje garantem a ausência dela, e são o ponto
+exato onde a decisão se inverte.
