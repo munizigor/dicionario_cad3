@@ -24,7 +24,10 @@
       "Bash(grep -o -E 'function dc\\\\\\(t\\\\\\).{0,500}' barra.js)",
       "Bash(grep -o -E 'function fc\\\\\\(t\\\\\\).{0,400}' barra.js)",
       "Bash(grep -o -E 'function Gr\\\\\\(t,e,i\\\\\\).{0,600}' barra.js)",
-      "Bash(grep -o -E '.{80}\\\\{mostrarDados:[^}]{0,120}\\\\}.{0,80}' barra.js)"
+      "Bash(grep -o -E '.{80}\\\\{mostrarDados:[^}]{0,120}\\\\}.{0,80}' barra.js)",
+      "Bash(python -m http.server -d docs 8000 --bind 127.0.0.1)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — index.html servido em %{size_download} bytes\\\\n\" http://127.0.0.1:8000/index.html)",
+      "Bash(git commit -q -m 'fix: elimina o spinner preso na barra do Governo Federal *)"
     ]
   }
 }

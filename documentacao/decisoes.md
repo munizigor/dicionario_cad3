@@ -65,6 +65,20 @@ um snapshot seria congelar um serviço que deve evoluir.
 some a barra e some o widget do VLibras. Todo o resto — dados, busca, filtros, diagramas,
 exportações — continua funcionando, porque não há `fetch` em lugar nenhum.
 
+**Nota sobre a configuração da `<barra-govbr>`.** O componente não tem documentação pública; o que se
+sabe dele veio da análise do bundle. Dois pontos que custaram tempo e valem registro:
+
+- O atributo `class` **não é estilo** — é um saco de feature flags lido por `includes()`. As
+  reconhecidas são `width100`, `shadow-none`, `no-cookie`, `no-login`, `show-contrast-toggle` e
+  `cta-login-disabled`. Usamos `no-login cta-login-disabled` porque o site é público e não autentica.
+- Sem `no-login`, o botão "Entrar" fica **com um spinner girando indefinidamente**. Não é falha de
+  rede nem de CORS: o estado de sessão nasce `undefined` e só sai disso com o atributo `logado`; a
+  flag de carregamento é `typeof sessão === "undefined"`, sem timeout nem fallback. A alternativa
+  seria `logado="false"`, que mantém o botão visível e funcional — não é o caso aqui.
+- O atributo `linksdosistema`, que aparece no HTML do portal gov.br em produção, **não existe** neste
+  componente e é ignorado em silêncio. O nome real é `menulinks`. Como a barra já traz os links
+  institucionais padrão e filtra duplicados, o atributo foi simplesmente removido.
+
 ---
 
 ## ADR-004 — A grade de colunas não recebe a classe `br-table`

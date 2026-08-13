@@ -25,16 +25,23 @@
 <!-- Web component oficial, servido por barra.sistema.gov.br. Não tem     -->
 <!-- documentação pública e não é vendorizável; se sair do ar, este bloco -->
 <!-- inteiro pode ser removido sem afetar o resto do site.                -->
+<!--                                                                      -->
+<!-- O `class` deste componente não é estilo: é um saco de flags que ele  -->
+<!-- lê por `includes()`. `no-login` remove a área de "Entrar" inteira —  -->
+<!-- sem ela, o botão fica com um spinner girando para sempre, porque o   -->
+<!-- estado de sessão só sai de indefinido com o atributo `logado`, e     -->
+<!-- este site é público e não autentica ninguém.                         -->
+<!--                                                                      -->
 <!-- TODO: preencher `titulo` com o nome do órgão antes de publicar.      -->
 <!-- ==================================================================== -->
 <script type="module" src="https://barra.sistema.gov.br/v1/barra-govbr-wc.iife.js"></script>
 <barra-govbr
   id="barra-govbr"
+  class="no-login cta-login-disabled"
   titulo=""
   linklogo="https://www.gov.br/pt-br"
   idiomaativo="pt"
-  contrastactive="false"
-  linksdosistema='[{"title":"Órgãos do Governo","href":"https://www.gov.br/pt-br/orgaos-do-governo"},{"title":"Acesso à Informação","href":"https://www.gov.br/acessoainformacao/pt-br"},{"title":"Legislação","href":"http://www4.planalto.gov.br/legislacao"},{"title":"Acessibilidade","href":"https://www.gov.br/governodigital/pt-br/acessibilidade-digital"}]'>
+  contrastactive="false">
 </barra-govbr>
 
 <div class="template-base">
