@@ -1015,12 +1015,12 @@
       el("a", { classe: "br-button primary", href: "#/mapa" }, [
         icone("project-diagram"), document.createTextNode("Ver mapa de relacionamentos")
       ]),
-      botao("Baixar dicionário completo (JSON)", "file-code", function () {
-        baixar("dicionario-cad3.json", JSON.stringify(DADOS, null, 2), "application/json");
-      }, "secondary"),
-      botao("Baixar DDL de todas as tabelas", "database", function () {
-        baixar("cad3-ddl-completo.sql", TABELAS.map(gerarDDL).join("\n"), "text/plain");
-      }, "secondary")
+      // botao("Baixar dicionário completo (JSON)", "file-code", function () {
+      //   baixar("dicionario-cad3.json", JSON.stringify(DADOS, null, 2), "application/json");
+      // }, "secondary"),
+      // botao("Baixar DDL de todas as tabelas", "database", function () {
+      //   baixar("cad3-ddl-completo.sql", TABELAS.map(gerarDDL).join("\n"), "text/plain");
+      // }, "secondary")
     ]));
 
     var grupos = el("div", { classe: "grade-grupos" }, GRUPOS.map(function (grupo) {
@@ -1072,12 +1072,12 @@
     var grade = tabelaColunas(tabela);
 
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      botao("DDL (.sql)", "database", function () {
-        baixar(tabela.nome + ".sql", gerarDDL(tabela), "text/plain");
-      }, "secondary"),
-      botao("JSON", "file-code", function () {
-        baixar(tabela.nome + ".json", JSON.stringify(tabela, null, 2), "application/json");
-      }, "secondary"),
+      // botao("DDL (.sql)", "database", function () {
+      //   baixar(tabela.nome + ".sql", gerarDDL(tabela), "text/plain");
+      // }, "secondary"),
+      // botao("JSON", "file-code", function () {
+      //   baixar(tabela.nome + ".json", JSON.stringify(tabela, null, 2), "application/json");
+      // }, "secondary"),
       botao("CSV das colunas", "file-csv", function () {
         baixar(tabela.nome + "-colunas.csv", gerarCSV(tabela), "text/csv");
       }, "secondary"),
