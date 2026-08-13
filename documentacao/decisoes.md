@@ -67,22 +67,30 @@ exportações — continua funcionando, porque não há `fetch` em lugar nenhum.
 
 ---
 
-## ADR-004 — A grade de colunas não usa `br-table` como componente funcional
+## ADR-004 — A grade de colunas não recebe a classe `br-table`
 
 **Data:** 2026-08-13 · **Status:** aceita
 
 **Contexto.** O DS oferece `br-table` com busca (`data-search`), seleção, colapso e paginação.
 
-**Decisão.** Usar `.br-table` apenas como moldura visual. A grade de colunas mantém a implementação
-própria: ordenação clicável com `aria-sort`, filtro incremental e cabeçalho sticky.
+**Decisão.** A grade de colunas não recebe a classe `.br-table`. Mantém a implementação própria:
+ordenação clicável com `aria-sort`, filtro incremental e cabeçalho sticky. A moldura visual vem do
+`br-card` que a envolve.
 
-**Justificativa.** `CHAMADO` tem 92 colunas e `OCORRENCIA` tem 74. O layout responsivo da `br-table`
-empilha cada linha em um bloco rotulado por `data-th` — legível para uma tabela de 5 colunas,
-inutilizável nessa escala. Além disso, `data-search` e `br-pagination` colidiriam com o filtro e a
-ordenação que já existem e funcionam.
+**Justificativa.** Duas razões, uma de layout e outra de comportamento.
+
+Layout: `CHAMADO` tem 92 colunas e `OCORRENCIA` tem 74. O modo responsivo da `br-table` empilha cada
+linha em um bloco rotulado por `data-th` — legível numa tabela de 5 colunas, inutilizável nessa
+escala.
+
+Comportamento: o `core-init.min.js` instancia `BRTable` em **todo** elemento com a classe
+`.br-table`, e o componente injeta header e footer próprios. Usar a classe apenas como moldura
+visual, como se pretendia no plano original, não é possível — a instanciação vem junto e brigaria
+com a ordenação e o filtro que já existem.
 
 **Consequências.** Desvio consciente do padrão, restrito a um componente. Os `<td>` recebem `data-th`
-mesmo assim, para que o rótulo esteja disponível a leitores de tela.
+mesmo assim, para que o rótulo da coluna esteja disponível a leitores de tela, e cada tabela tem um
+`<caption class="sr-only">`.
 
 ---
 
@@ -92,14 +100,21 @@ mesmo assim, para que o rótulo esteja disponível a leitores de tela.
 
 **Contexto.** O `br-menu` do DS nasce fechado e abre pelo botão do cabeçalho, em qualquer largura.
 
-**Decisão.** Usar o markup `br-menu push` do padrão, com uma media query própria que o mantém aberto
-a partir de 1280px (`lg`), escondendo o gatilho nessa faixa.
+**Decisão.** Usar o `br-menu` no modo offcanvas padrão, **sem** o modificador `push`, e mantê-lo
+aberto a partir de 1280px por media query própria, escondendo o gatilho nessa faixa.
 
 **Justificativa.** O menu é a navegação primária entre 71 tabelas. Com o comportamento nativo, cada
 troca de tabela custaria dois cliques e uma reabertura — o uso principal do site ficaria penalizado.
 
-**Consequências.** Desvio documentado do comportamento nativo, só em CSS. No mobile o comportamento é
-o padrão do DS (offcanvas com scrim).
+O `push`, que seria o candidato natural, foi descartado: ele aplica `display:none` tanto ao
+`menu-scrim` quanto ao `menu-header`, e essas regras não dependem de `.active`. No mobile isso
+deixaria o menu aberto sem véu e sem botão de fechar — o usuário ficaria preso. Sem o `push`, o
+mobile recebe o comportamento completo do DS (véu, fechar, controle de foco) e o desvio fica contido
+numa media query de desktop.
+
+**Consequências.** As regras do desvio usam o `#main-navigation` como seletor, para vencer
+`.br-menu.active .menu-container{position:fixed}` do core — que voltaria a valer se o usuário
+abrisse o menu no mobile e depois alargasse a janela.
 
 ---
 

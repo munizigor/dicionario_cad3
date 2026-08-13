@@ -17,13 +17,30 @@ gerada a partir do PDF de 87 páginas exportado pelo Oracle SQL Developer Data M
   com zoom, arrasto e destaque de vizinhança — tudo em SVG, sem biblioteca externa.
 - **Exportação**: DDL Oracle aproximado (`.sql`), JSON, CSV das colunas e diagrama Mermaid
   (`.mmd`) por tabela; JSON e DDL completos na página inicial.
-- Tema claro/escuro, layout responsivo e folha de estilo de impressão.
+- Layout responsivo e folha de estilo de impressão.
+
+## Padrão Digital de Governo
+
+O site segue o [Padrão Digital de Governo](https://www.gov.br/ds/home): cabeçalho e rodapé oficiais,
+tipografia Rawline, paleta e componentes do design system, barra do Governo Federal, VLibras e skip
+link com os atalhos de teclado 1 a 4. Alvo de acessibilidade: **WCAG 2.2 A + AA** (ABNT NBR
+17225:2025).
+
+Os arquivos do design system são **vendorizados** em `docs/assets/` — o site não depende de nenhum
+CDN. Para verificar a aderência:
+
+```sh
+python3 tools/verificar_conformidade.py
+```
+
+> **Antes de publicar oficialmente:** há quatro `TODO` no `docs/index.html` — o nome do órgão no
+> cabeçalho, no rodapé e no atributo `titulo` da barra gov.br, e o favicon institucional.
 
 ## Como usar
 
-O site é estático e não depende de servidor: basta abrir `docs/index.html` no navegador. Os dados
-vão embutidos em `docs/dados.js` (e não carregados via `fetch`) justamente para funcionar também
-por `file://`.
+O site é estático e não depende de servidor. Os dados vão embutidos em `docs/dados.js` (e não
+carregados via `fetch`), então busca, filtros, diagramas e exportações funcionam mesmo sem rede — só
+a barra do Governo Federal e o VLibras precisam de conexão, por serem serviços vivos.
 
 Para publicar no GitHub Pages: **Settings → Pages → Source: Deploy from a branch**, e escolher a
 branch com a pasta `/docs`.
@@ -33,6 +50,15 @@ Para servir localmente:
 ```sh
 python3 -m http.server -d docs 8000   # http://localhost:8000
 ```
+
+## Documentação
+
+Em [`documentacao/`](documentacao/) — e não em `docs/`, que é a raiz publicada do site:
+
+- [`processo-negocio.md`](documentacao/processo-negocio.md) — o problema e as pessoas atendidas
+- [`arquitetura.md`](documentacao/arquitetura.md) — stack, organização do código e verificação
+- [`decisoes.md`](documentacao/decisoes.md) — ADRs curtos
+- [`CHANGELOG.md`](documentacao/CHANGELOG.md) — o que mudou em cada release
 
 ## Como regenerar a partir de um PDF novo
 
@@ -59,10 +85,14 @@ O extrator falha com código de saída 1 se a extração regredir. As assertivas
 ```
 fonte/Dicionario_CAD_Ocorrencia.pdf   PDF original (87 páginas)
 tools/extrair_pdf.py                  extrator PDF → JSON (pdfplumber)
+tools/baixar_assets_ds.py             baixa os assets do gov.br DS para docs/assets/
+tools/verificar_conformidade.py       checa a aderência ao Padrão Digital
 data/dicionario.json                  dados estruturados, versionados
-docs/                                 o site
+documentacao/                         documentação do projeto (ADRs, arquitetura, changelog)
+docs/                                 o site (raiz publicada do GitHub Pages)
   index.html · styles.css · app.js    ~1.400 linhas de JS puro, sem dependências
   dados.js                            gerado pelo extrator
+  assets/                             gov.br DS 3.7.0, Rawline, Font Awesome — gerados por script
 ```
 
 ## Observações sobre os dados

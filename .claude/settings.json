@@ -9,7 +9,17 @@
       "Bash(curl -sL \"https://cdngovbr-ds.estaleiro.serpro.gov.br/design-system/fonts/rawline/css/rawline.css\")",
       "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css\")",
       "Bash(python tools/baixar_assets_ds.py)",
-      "Bash(git commit -q -m 'build: vendoriza assets do gov.br DS 3.7.0 em docs/assets *)"
+      "Bash(git commit -q -m 'build: vendoriza assets do gov.br DS 3.7.0 em docs/assets *)",
+      "Bash(curl -sL \"https://cdn.jsdelivr.net/npm/@govbr-ds/core@3.7.0/dist/templates/base/base.html\")",
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "Bash(node --check docs/app.js)",
+      "Bash(sed -n '/Ganchos/,/^$/p')",
+      "Bash(git commit -q -m 'feat: adota o template base do gov.br DS no index.html *)",
+      "Bash(git commit -q -m 'refactor: reescreve o CSS sobre os tokens do design system *)",
+      "Bash(git commit -q -m 'feat: adapta o app.js aos componentes br-* do DS *)",
+      "Bash(git commit -q -m 'test: verifica os ganchos entre app.js e index.html *)",
+      "Bash(git commit -q -m 'docs: atualiza README e documentacao do sistema *)"
     ]
   }
 }
