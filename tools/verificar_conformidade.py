@@ -37,12 +37,14 @@ ANCORAS_SKIPLINK = [
 # Únicos hosts remotos aceitos: são serviços vivos, não vendorizáveis (ADR-003).
 HOSTS_PERMITIDOS = ("barra.sistema.gov.br", "vlibras.gov.br")
 
-# Arquivos que precisam existir vendorizados em docs/assets/.
+# Arquivos que precisam existir vendorizados em docs/assets/. Os CSS de fonte
+# ficam sob `css/` porque referenciam `../font/` e `../webfonts/` — a estrutura
+# replica a das origens para que os caminhos relativos resolvam sem reescrita.
 ASSETS_ESPERADOS = [
     "assets/govbr/core.min.css",
     "assets/govbr/core-init.min.js",
-    "assets/fonts/rawline/rawline.css",
-    "assets/fontawesome/all.min.css",
+    "assets/fonts/rawline/css/rawline.css",
+    "assets/fontawesome/css/all.min.css",
 ]
 
 # Marcas do tema escuro e do menu artesanal, removidos na adequação.

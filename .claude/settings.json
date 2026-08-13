@@ -5,7 +5,11 @@
       "Bash(git commit -q -m 'docs: registra análise e plano da adequação ao Padrão Digital *)",
       "Bash(python tools/verificar_conformidade.py)",
       "Bash(echo \"EXIT=$?\")",
-      "Bash(git commit -q -m 'test: adiciona verificador de conformidade ao Padrao Digital *)"
+      "Bash(git commit -q -m 'test: adiciona verificador de conformidade ao Padrao Digital *)",
+      "Bash(curl -sL \"https://cdngovbr-ds.estaleiro.serpro.gov.br/design-system/fonts/rawline/css/rawline.css\")",
+      "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css\")",
+      "Bash(python tools/baixar_assets_ds.py)",
+      "Bash(git commit -q -m 'build: vendoriza assets do gov.br DS 3.7.0 em docs/assets *)"
     ]
   }
 }
