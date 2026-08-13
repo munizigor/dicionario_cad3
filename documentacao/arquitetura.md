@@ -70,7 +70,7 @@ verificador para isso na seção seguinte.
 ## Verificação
 
 ```sh
-python tools/verificar_conformidade.py     # 71 checagens; sai 1 se alguma falhar
+python tools/verificar_conformidade.py     # 73 checagens; sai 1 se alguma falhar
 python -m http.server -d docs 8000         # http://localhost:8000
 ```
 

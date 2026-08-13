@@ -17,7 +17,7 @@ Sem alternativas. Desvios exigem justificativa técnica e decisão do Navegador.
 ## Comandos
 
 ```sh
-python tools/verificar_conformidade.py          # testes — 71 checagens, sai 1 se falhar
+python tools/verificar_conformidade.py          # testes — 73 checagens, sai 1 se falhar
 python -m http.server -d docs 8000              # rodar — http://localhost:8000
 python tools/baixar_assets_ds.py                # atualizar assets do DS
 python tools/extrair_pdf.py                     # regerar dados a partir do PDF
@@ -54,6 +54,9 @@ documentacao/    docs do projeto: processo-negocio, arquitetura, decisoes (ADRs)
 - **Ícone sempre com `aria-hidden="true"`**; botão só-ícone sempre com `aria-label`.
 - **Chaves de objeto que sejam palavras reservadas vão entre aspas** (`"for"`), por segurança de
   parser.
+- **Ao editar `styles.css` ou `app.js`, incremente o `?v=` no `index.html`.** Sem isso o navegador
+  serve a versão em cache e a mudança some — foi o que aconteceu na primeira rodada de correções
+  visuais. O verificador cobra a presença do `?v=`, mas não sabe se o número foi incrementado.
 
 ## Armadilhas dos tokens do DS
 

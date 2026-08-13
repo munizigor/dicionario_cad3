@@ -284,6 +284,12 @@ def verificar_assets(rel, doc):
     webfonts = list((SITE / "assets" / "fontawesome").rglob("*.woff2")) if (SITE / "assets" / "fontawesome").exists() else []
     rel.checar(g, webfonts, "webfonts do Font Awesome baixados")
 
+    # styles.css e app.js mudam a cada release; sem o `?v=` quem já visitou o
+    # site continua com a versão antiga em cache por dias.
+    for arquivo in ("styles.css", "app.js"):
+        versionado = [u for _, u in referencias if u.startswith(arquivo + "?v=")]
+        rel.checar(g, versionado, "%s referenciado com ?v= (cache busting)" % arquivo)
+
 
 def verificar_institucional(rel, doc, fonte_index):
     g = rel.grupo("Elementos institucionais")

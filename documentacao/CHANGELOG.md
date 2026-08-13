@@ -13,7 +13,7 @@ que muda é a camada de apresentação e a acessibilidade.
 - VLibras.
 - Rodapé institucional com proveniência dos dados e licença de uso.
 - `tools/baixar_assets_ds.py` — baixa e atualiza os assets do DS com as versões fixadas.
-- `tools/verificar_conformidade.py` — 71 checagens estáticas de aderência ao padrão.
+- `tools/verificar_conformidade.py` — 73 checagens estáticas de aderência ao padrão.
 - `documentacao/` com processo de negócio, arquitetura e seis ADRs.
 
 ### Alterado

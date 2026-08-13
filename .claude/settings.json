@@ -29,7 +29,13 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — index.html servido em %{size_download} bytes\\\\n\" http://127.0.0.1:8000/index.html)",
       "Bash(git commit -q -m 'fix: elimina o spinner preso na barra do Governo Federal *)",
       "Bash(git commit -q -m 'fix: painel do menu preenche a largura reservada *)",
-      "Bash(git commit -q -m 'feat!: remove a barra do Governo Federal \\(ADR-007\\) *)"
+      "Bash(git commit -q -m 'feat!: remove a barra do Governo Federal \\(ADR-007\\) *)",
+      "Bash(curl -s \"http://127.0.0.1:8000/styles.css\")",
+      "Bash(curl -sI \"http://127.0.0.1:8000/styles.css\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/index.html\")",
+      "Bash(sed -i 's|71 checagens estáticas|73 checagens estáticas|' documentacao/CHANGELOG.md)",
+      "Bash(sed -i 's|# 71 checagens; sai 1|# 73 checagens; sai 1|' documentacao/arquitetura.md)",
+      "Bash(git commit -q -m 'fix: cache busting em styles.css e app.js *)"
     ]
   }
 }

@@ -13,7 +13,13 @@
 <link rel="stylesheet" href="assets/fonts/rawline/css/rawline.css">
 <link rel="stylesheet" href="assets/govbr/core.min.css">
 <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-<link rel="stylesheet" href="styles.css">
+
+<!-- O `?v=` força o navegador a buscar a versão nova em vez de servir a do
+     cache. Só os dois arquivos que mudam com frequência precisam disso; os
+     assets do DS são imutáveis dentro de uma versão.
+     IMPORTANTE: incremente o número ao editar styles.css ou app.js — sem isso,
+     quem já visitou o site continua vendo a versão anterior por dias. -->
+<link rel="stylesheet" href="styles.css?v=2">
 
 <!-- TODO: trocar pelo favicon do órgão antes de publicar. -->
 <link rel="icon" href="assets/img/govbr.png">
@@ -182,7 +188,7 @@
 <!-- dados.js e app.js primeiro: o app monta o menu e a trilha, e só então o
      core-init instancia os componentes do DS sobre o DOM já completo. -->
 <script src="dados.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=2"></script>
 <script src="assets/govbr/core-init.min.js"></script>
 </body>
 </html>
