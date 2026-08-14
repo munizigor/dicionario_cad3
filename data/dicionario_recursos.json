@@ -1,0 +1,2290 @@
+{
+  "meta": {
+    "titulo": "Dicionário de Dados — SINESP CAD 2",
+    "subtitulo": "Schema CAD_RECURSOS",
+    "design": "CAD-Recursos-Sinesp",
+    "modelo": "CAD-Recursos",
+    "versao_pdf": "21.11.2019 06:00:18",
+    "arquivo_fonte": "CAD_Recursos_dicionario.pdf",
+    "arquivo_diagrama": "CAD_Recursos_diagrama.pdf",
+    "paginas_pdf": 18,
+    "gerado_em": "2026-08-14",
+    "total_tabelas": 13,
+    "total_colunas": 76,
+    "total_relacionamentos": 13
+  },
+  "tabelas": [
+    {
+      "nome": "CARGO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.CARGO",
+      "descricao": "Cargo é nome atribuído à posição que uma determinada pessoa ocupa em uma Agência",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 4,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_CARGO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar um Cargo",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "NO_CARGO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome do Cargo",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "ID_AGENCIA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Agência que possui o Cargo. Origem: SINESP-CAD; WSDL: cad-servico/rest/agencia/listar-usuario; Serviço: pesquisarAgenciasComRegioesDoUsuario; Periodicidade de atualização: online; Manutenção de origem: Não tratado",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "SN_ATIVO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "1",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se o Cargo está ou não ativo",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_CARGO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_CARGO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [],
+      "fks_entrada": [
+        {
+          "nome": "FK_PESSOA_CARGO",
+          "tabela": "PESSOA",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_CARGO"
+          ],
+          "colunas_referidas": [
+            "ID_CARGO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        2
+      ]
+    },
+    {
+      "nome": "CTRL_SCHEDULE",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.CTRL_SCHEDULE",
+      "descricao": "Tabela para controle de lock de rotinas que rodam nos servidores balanceados. Inicialmente atende a rotina de atualizacao das equipes",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 2,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "NR_CHAVE",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (2)",
+          "tipo_fisico": "NUMBER (2)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador do tipo de processo que conseguiu o lock.",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "DT_INICIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "Timestamp (6)",
+          "tipo_fisico": "TIMESTAMP",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data de inicio do processo que conseguiu o lock",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_CTRL_SCHEDULE",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "NR_CHAVE",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        3
+      ]
+    },
+    {
+      "nome": "EQUIPAMENTO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.EQUIPAMENTO",
+      "descricao": "Equipamento é o recurso utilizado pela Equipe para a execução do trabalho quando a Equipe estiver ativa. Por exemplo: Veículo Toyota Corolla, Placa UIJ-9809, Prefixo BRA01K-PTC",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 10,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_EQUIPAMENTO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar um Equipamento",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_TIPO_EQUIPAMENTO",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador do Tipo de Equipamento que categoriza o Equipamento",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "NO_MARCA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (50 BYTE)",
+          "tipo_fisico": "VARCHAR2 (50 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome da marca do Equipamento, quando aplicável",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "NO_MODELO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome do modelo do Equipamento, quando aplicável",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "CO_PLACA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (15 BYTE)",
+          "tipo_fisico": "VARCHAR2 (15 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número da placa do Equipamento, quando aplicável",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "TX_PREFIXO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (50 BYTE)",
+          "tipo_fisico": "VARCHAR2 (50 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Prefixo do Equipamento, quando aplicável",
+          "notas": null
+        },
+        {
+          "no": 7,
+          "nome": "ID_AGENCIA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Agência ao qual o Recurso pertence. Origem: SINESP-CAD; WSDL: cad-servico/rest/agencia/listar-usuario; Serviço: pesquisarAgenciasComRegioesDoUsuario; Periodicidade de atualização: online; Manutenção de origem: Não tratado",
+          "notas": null
+        },
+        {
+          "no": 8,
+          "nome": "SN_ATIVO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "1",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica a situação do Equipamento. Se não estiver ativo, não poderá ser utilizado nem exibido no sistema",
+          "notas": null
+        },
+        {
+          "no": 9,
+          "nome": "SN_REGISTRAR_KM",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "0",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se o equipamento deve registrar a kilometragem. O valor padrão será não registrar. Se ativado o registro de km, será armazenado o histórico de km em outra tabela.",
+          "notas": null
+        },
+        {
+          "no": 10,
+          "nome": "NR_KM",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (6)",
+          "tipo_fisico": "NUMBER (6)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Último número de km registrado o cada equipamento.",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_EQPM_ID_TIPO_EQPM",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_TIPO_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "IX_EQUIPAMENTO_CO_PLACA",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "CO_PLACA",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_EQUIPAMENTO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_EQUIPAMENTO_TIPO_EQPM",
+          "tabela": "TIPO_EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [
+        {
+          "nome": "FK_EQUIPE_EQPM_EQUIPAMENTO",
+          "tabela": "EQUIPE_EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPAMENTO",
+          "tabela": "HISTORICO_KM_EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        4,
+        5
+      ]
+    },
+    {
+      "nome": "EQUIPE",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.EQUIPE",
+      "descricao": "Equipe é um grupo de Pessoas/Equipamentos que atuam durante uma jornada de trabalho na organização. É utilizada para controle da escala de trabalho para demanda de Incidentes",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 14,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_EQUIPE",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar uma Equipe",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "DT_ATIVACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora do início da atividade da Equipe",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "DT_ENCERRAMENTO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora do término da atividade da Equipe",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "TX_JUSTIFICATIVA_ENCERRAMENTO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Texto que contém o motivo do encerramento da Equipe",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "CO_COORDENADA_GEOGRAFICA_LOCAL",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Ponto geográfico que marca a localização da Equipe",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "NO_EQUIPE",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome que identifica a Equipe (QRA)",
+          "notas": null
+        },
+        {
+          "no": 7,
+          "nome": "NR_SEQUENCIAL_ATUALIZACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número da versão da Equipe utilizado para manter a integridade em caso de edições concorrentes",
+          "notas": null
+        },
+        {
+          "no": 8,
+          "nome": "SN_ARQUIVADA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se a Equipe está arquivada. Essa situação pode ocorrer quando a Equipe for cadastrada mas não ativada",
+          "notas": null
+        },
+        {
+          "no": 9,
+          "nome": "NR_TELEFONE",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (15 BYTE)",
+          "tipo_fisico": "VARCHAR2 (15 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número de Telefone da Equipe",
+          "notas": null
+        },
+        {
+          "no": 10,
+          "nome": "DT_INICIO_PREVISTA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora prevista da ativação da Equipe. Utilizado para marcar as Equipes que deveriam ser ativadas mas ainda permanecem como cadastradas",
+          "notas": null
+        },
+        {
+          "no": 11,
+          "nome": "DT_FIM_PREVISTA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora prevista do encerramento da Equipe. Utilizado para marcar as Equipes que deveriam ser encerradas mas não foram",
+          "notas": null
+        },
+        {
+          "no": 12,
+          "nome": "DT_CADASTRO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora em que a Equipe foi cadastrada no sistema",
+          "notas": null
+        },
+        {
+          "no": 13,
+          "nome": "SG_FUSO_HORARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (4 BYTE)",
+          "tipo_fisico": "VARCHAR2 (4 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": null,
+          "notas": null
+        },
+        {
+          "no": 14,
+          "nome": "SN_MISTA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "0",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se a equipe é mista",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_EQUIPE_DTENC_DTATIV_IDEQPE",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "DT_ENCERRAMENTO",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "DT_ATIVACAO",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_EQUIPE",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [],
+      "fks_entrada": [
+        {
+          "nome": "FK_EQUIPE_EQUIPAMENTO_EQUIPE",
+          "tabela": "EQUIPE_EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE_PESSOA_EQUIPE",
+          "tabela": "EQUIPE_PESSOA",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE_REGIAO_EQUIPE",
+          "tabela": "EQUIPE_REGIAO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_HISTORICO_EQUIPE_EQUIPE",
+          "tabela": "HISTORICO_EQUIPE",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_HIST_EQUIPE_RELACAO",
+          "tabela": "HISTORICO_EQUIPE",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE_RELACIONADA"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE",
+          "tabela": "HISTORICO_KM_EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        6,
+        7
+      ]
+    },
+    {
+      "nome": "EQUIPE_EQUIPAMENTO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.EQUIPE_EQUIPAMENTO",
+      "descricao": "Relação que indica quais Equipamentos são utilizados pela Equipe",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 2,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_EQUIPE",
+          "pk": true,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Equipe que utiliza o Equipamento",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_EQUIPAMENTO",
+          "pk": true,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador do Equipamento utilizado pela Equipe",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_EQUIPE_EQPM_ID_EQUIPAMENTO",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_EQUIPE_EQUIPAMENTO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "ID_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_EQUIPE_EQPM_EQUIPAMENTO",
+          "tabela": "EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE_EQUIPAMENTO_EQUIPE",
+          "tabela": "EQUIPE",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        8
+      ]
+    },
+    {
+      "nome": "EQUIPE_PESSOA",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.EQUIPE_PESSOA",
+      "descricao": "Relação que indica quais Pessoas participam da Equipe com determinada Função",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 3,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_EQUIPE",
+          "pk": true,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Equipe que agrupa as Pessoas",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_PESSOA",
+          "pk": true,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Pessoa que participa da Equipe",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "ID_FUNCAO",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Função que a Pessoa exerce na Equipe",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_EQUIPE_PESSOA_ID_FUNCAO",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_FUNCAO",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "IX_EQUIPE_PESSOA_ID_PESSOA",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_PESSOA",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_EQUIPE_PESSOA",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "ID_PESSOA",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_EQUIPE_PESSOA_EQUIPE",
+          "tabela": "EQUIPE",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE_PESSOA_FUNCAO",
+          "tabela": "FUNCAO",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_FUNCAO"
+          ],
+          "colunas_referidas": [
+            "ID_FUNCAO"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE_PESSOA_PESSOA",
+          "tabela": "PESSOA",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_PESSOA"
+          ],
+          "colunas_referidas": [
+            "ID_PESSOA"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        9
+      ]
+    },
+    {
+      "nome": "EQUIPE_REGIAO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.EQUIPE_REGIAO",
+      "descricao": "Relação que indica em quais Regiões as Equipes estão cadastradas. A Região de Atuação é o perímetro geográfico onde há a atuação de uma Agência. As Regiões de Atuação são definidas no CAD-Gerenciador e é armazenado somente o seu Identificador",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 2,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_EQUIPE",
+          "pk": true,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Equipe que atua na Região",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_REGIAO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Região em que a Equipe atua",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_EQPE_REG_ID_REG_ID_EQUIPE",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_REGIAO",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_EQUIPE_REGIAO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            },
+            {
+              "nome": "ID_REGIAO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_EQUIPE_REGIAO_EQUIPE",
+          "tabela": "EQUIPE",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        10
+      ]
+    },
+    {
+      "nome": "FUNCAO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.FUNCAO",
+      "descricao": "A Função é a atividade que a Pessoa desempenha em uma Equipe para uma determinada Agência",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 4,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_FUNCAO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar uma Função",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "NO_FUNCAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome da Função",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "ID_AGENCIA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Agência que determina as Funções para os integrantes da Equipe. Origem: SINESP-CAD; WSDL: cad-servico/rest/agencia/listar-usuario; Serviço: pesquisarAgenciasComRegioesDoUsuario; Periodicidade de atualização: online; Manutenção de origem: Não tratado",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "SN_ATIVA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "1",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se a Função está ou não ativa",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_FUNCAO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_FUNCAO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [],
+      "fks_entrada": [
+        {
+          "nome": "FK_EQUIPE_PESSOA_FUNCAO",
+          "tabela": "EQUIPE_PESSOA",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_FUNCAO"
+          ],
+          "colunas_referidas": [
+            "ID_FUNCAO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        11
+      ]
+    },
+    {
+      "nome": "HISTORICO_EQUIPE",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.HISTORICO_EQUIPE",
+      "descricao": "O Histórico da Equipe é a lista de ações realizadas no registo da Equipe (Por exemplo: Inclusão, Edição, Ativação, Encerramento, Remoção). Quando uma Equipe ativa for editada, o sistema deve encerrar a Equipe atual, gerar uma nova Equipe com os dados alterados e adicionar o identificador da Equipe encerrada no Histórico da nova Equipe.",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 7,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_HISTORICO_EQUIPE",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar o Histórico da Equipe",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "DT_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora do momento em que a Ação ocorreu",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "IN_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica qual ação foi realizada. Os valores possíveis são: 0 - Inclusão; 1 - Edição; 2 - Ativação; 3 - Encerramento; 4 - Remoção. 5 - Entrada em Pausa 6 - Saída de Pausa",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "NO_USUARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome do Usuario responsável pela ação",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "CO_CPF_USUARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (20 BYTE)",
+          "tipo_fisico": "VARCHAR2 (20 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "CPF do Usuário responsável pela ação",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "ID_EQUIPE",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Equipe que sofreu a ação",
+          "notas": null
+        },
+        {
+          "no": 7,
+          "nome": "ID_EQUIPE_RELACIONADA",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador da Equipe encerrada em virtude da edição de Equipe ativa",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_HIST_EQUIPE_ID_EQUIPE",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "IX_HIST_EQUIPE_ID_RELACAO",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_EQUIPE_RELACIONADA",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_HISTORICO_EQUIPE",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_HISTORICO_EQUIPE",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_HISTORICO_EQUIPE_EQUIPE",
+          "tabela": "EQUIPE",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_HIST_EQUIPE_RELACAO",
+          "tabela": "EQUIPE",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE_RELACIONADA"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        12,
+        13
+      ]
+    },
+    {
+      "nome": "HISTORICO_KM_EQUIPAMENTO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.HISTORICO_KM_EQUIPAMENTO",
+      "descricao": null,
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 7,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_HISTORICO_KM_EQUIPAMENTO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar o Histórico do Equipamento",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_EQUIPE",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Id da Equipe",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "ID_EQUIPAMENTO",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Id do Equipamento",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "DT_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora do momento em que a Ação ocorreu",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "IN_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica qual Ação foi realizada.",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "CO_CPF_USUARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (20 BYTE)",
+          "tipo_fisico": "VARCHAR2 (20 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica o cpf do usuário que executou uma determinada ação.",
+          "notas": null
+        },
+        {
+          "no": 7,
+          "nome": "NR_KM",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (6)",
+          "tipo_fisico": "NUMBER (6)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica o valor da kilometragem em uma determinada ação.",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_HISTORICO_KM_EQUIPAMENTO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_HISTORICO_KM_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_EQUIPAMENTO",
+          "tabela": "EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_EQUIPE",
+          "tabela": "EQUIPE",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_EQUIPE"
+          ],
+          "colunas_referidas": [
+            "ID_EQUIPE"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        14
+      ]
+    },
+    {
+      "nome": "HISTORICO_TIPO_EQUIPAMENTO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.HISTORICO_TIPO_EQUIPAMENTO",
+      "descricao": "O Histórico do Tipo de Equipamento é a lista de ações realizadas no registro do Tipo de Equipamento (Por exemplo: Inclusão, Edição, Remoção).",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 6,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_HISTORICO_TIPO_EQUIPAMENTO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar o Histórico do Tipo de Equipamento",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "ID_TIPO_EQUIPAMENTO",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador do Tipo de Equipamento que sofreu a ação",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "DT_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "Date (7)",
+          "tipo_fisico": "DATE",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Data e hora do momento em que a Ação ocorreu",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "IN_ACAO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica qual ação foi realizada. Os valores possíveis são: 0 - Inclusão; 1 - Edição; 2 - Remoção.",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "NO_USUARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome do Usuario responsável pela ação",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "CO_CPF_USUARIO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (20 BYTE)",
+          "tipo_fisico": "VARCHAR2 (20 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "CPF do Usuário responsável pela ação",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_HISTORICO_TIPO_EQUIPAMENTO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_HISTORICO_TIPO_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_TIPO_EQUIPAMENTO",
+          "tabela": "TIPO_EQUIPAMENTO",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [],
+      "constraints": [],
+      "paginas": [
+        15
+      ]
+    },
+    {
+      "nome": "PESSOA",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.PESSOA",
+      "descricao": "Pessoa é um colaborador de uma Agência que realiza atendimento de Incidentes através de uma Equipe. Algumas pessoas cadastradas no CAD-Recursos devem ser previamente cadastradas no SINESP-Segurança (Por exemplo: Operador e Escalante). Os participantes das Equipes não necessariamente precisam estar cadastrados no SINESP-Segurança.",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 10,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_PESSOA",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar uma Pessoa",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "CO_CPF",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (11 BYTE)",
+          "tipo_fisico": "VARCHAR2 (11 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número de CPF da Pessoa",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "CO_MATRICULA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (50 BYTE)",
+          "tipo_fisico": "VARCHAR2 (50 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número da Matrícula da pessoa na Agência",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "NO_PESSOA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome completo da Pessoa",
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "NO_FUNCIONAL",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome pelo qual a Pessoa é mais conhecida",
+          "notas": null
+        },
+        {
+          "no": 6,
+          "nome": "NR_TELEFONE_CELULAR",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (15 BYTE)",
+          "tipo_fisico": "VARCHAR2 (15 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número do telefone celular da Pessoa",
+          "notas": null
+        },
+        {
+          "no": 7,
+          "nome": "NR_TELEFONE_FIXO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": false,
+          "tipo": "VARCHAR (15 BYTE)",
+          "tipo_fisico": "VARCHAR2 (15 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número do telefone fixo da Pessoa",
+          "notas": null
+        },
+        {
+          "no": 8,
+          "nome": "ID_AGENCIA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indicador da Agência onde a Pessoa está vinculada. Origem: SINESP-CAD; WSDL: cad-servico/rest/agencia/listar-usuario; Serviço: pesquisarAgenciasComRegioesDoUsuario; Periodicidade de atualização: online; Manutenção de origem: Não tratado",
+          "notas": null
+        },
+        {
+          "no": 9,
+          "nome": "ID_CARGO",
+          "pk": false,
+          "fk": true,
+          "obrigatoria": false,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Identificador do Cargo que a Pessoa exerce na Agência",
+          "notas": null
+        },
+        {
+          "no": 10,
+          "nome": "SN_ATIVA",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "1",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Indica se a Pessoa está ou não ativa",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "IX_PESSOA_CO_CPF",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "CO_CPF",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "IX_PESSOA_ID_CARGO",
+          "estado": null,
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_CARGO",
+              "ordem": "ASC"
+            }
+          ]
+        },
+        {
+          "nome": "PK_PESSOA",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_PESSOA",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [
+        {
+          "nome": "FK_PESSOA_CARGO",
+          "tabela": "CARGO",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_CARGO"
+          ],
+          "colunas_referidas": [
+            "ID_CARGO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "fks_entrada": [
+        {
+          "nome": "FK_EQUIPE_PESSOA_PESSOA",
+          "tabela": "EQUIPE_PESSOA",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_PESSOA"
+          ],
+          "colunas_referidas": [
+            "ID_PESSOA"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        16,
+        17
+      ]
+    },
+    {
+      "nome": "TIPO_EQUIPAMENTO",
+      "schema": "CAD_RECURSOS",
+      "nome_completo": "CAD_RECURSOS.TIPO_EQUIPAMENTO",
+      "descricao": "Categorização dos recursos utilizados pelas Equipes. Por exemplo: Automóvel, Avião, Arma de Fogo",
+      "notas": null,
+      "atributos": {},
+      "volumetria": {
+        "numero_colunas": 5,
+        "linhas_min": null,
+        "linhas_max": null,
+        "linhas_esperadas": null,
+        "crescimento_esperado": null,
+        "intervalo_crescimento": null
+      },
+      "colunas": [
+        {
+          "no": 1,
+          "nome": "ID_TIPO_EQUIPAMENTO",
+          "pk": true,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (10)",
+          "tipo_fisico": "NUMBER (10)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Número sequencial gerado pelo sistema para identificar um Tipo de Equipamento",
+          "notas": null
+        },
+        {
+          "no": 2,
+          "nome": "NO_TIPO_EQUIPAMENTO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (255 BYTE)",
+          "tipo_fisico": "VARCHAR2 (255 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Nome que identifica o Tipo do Equipamento",
+          "notas": null
+        },
+        {
+          "no": 3,
+          "nome": "NO_CLASSE",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (50 BYTE)",
+          "tipo_fisico": "VARCHAR2 (50 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Classificação do Equipamento em Material ou Animal",
+          "notas": null
+        },
+        {
+          "no": 4,
+          "nome": "SN_ATIVO",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "NUMERIC (1)",
+          "tipo_fisico": "NUMBER (1)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": "1",
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": null,
+          "notas": null
+        },
+        {
+          "no": 5,
+          "nome": "IN_ICONE",
+          "pk": false,
+          "fk": false,
+          "obrigatoria": true,
+          "tipo": "VARCHAR (30 BYTE)",
+          "tipo_fisico": "VARCHAR2 (30 BYTE)",
+          "dt_kind": "LT",
+          "dominio": null,
+          "formula": null,
+          "seguranca": null,
+          "abreviacao": null,
+          "descricao": "Ícone deste tipo de equipamento.",
+          "notas": null
+        }
+      ],
+      "indices": [
+        {
+          "nome": "PK_TIPO_EQUIPAMENTO",
+          "estado": "PK",
+          "funcional": false,
+          "espacial": false,
+          "expressao": null,
+          "colunas": [
+            {
+              "nome": "ID_TIPO_EQUIPAMENTO",
+              "ordem": "ASC"
+            }
+          ]
+        }
+      ],
+      "fks_saida": [],
+      "fks_entrada": [
+        {
+          "nome": "FK_EQUIPAMENTO_TIPO_EQPM",
+          "tabela": "EQUIPAMENTO",
+          "obrigatoria": true,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        },
+        {
+          "nome": "FK_TIPO_EQUIPAMENTO",
+          "tabela": "HISTORICO_TIPO_EQUIPAMENTO",
+          "obrigatoria": false,
+          "transferivel": true,
+          "em_arco": false,
+          "colunas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "colunas_referidas": [
+            "ID_TIPO_EQUIPAMENTO"
+          ],
+          "regra_exclusao": null
+        }
+      ],
+      "constraints": [],
+      "paginas": [
+        18
+      ]
+    }
+  ]
+}

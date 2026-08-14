@@ -194,3 +194,94 @@ O VLibras passa a ser a **única** dependência remota do site.
 Se a barra ganhar documentação e licença públicas, reverter é barato — o
 `tools/verificar_conformidade.py` tem duas checagens que hoje garantem a ausência dela, e são o ponto
 exato onde a decisão se inverte.
+
+---
+
+## ADR-008 — Um site para vários schemas, com a rota prefixada pelo slug
+
+**Data:** 2026-08-14 · **Status:** aceita
+
+**Contexto.** O site nasceu servindo um schema só, o `CAD_OCORRENCIA` do SINESP CAD 3. Com a chegada
+do `CAD_RECURSOS`, do SINESP CAD 2, era preciso decidir se o segundo dicionário ganharia página
+própria (`docs/recursos.html`, reaproveitando o `app.js` com outro arquivo de dados) ou se o mesmo
+site passaria a servir os dois.
+
+**Decisão.** Um site só. Cada schema é uma entrada do registro `SCHEMAS`, no topo do `docs/app.js`, e
+o primeiro segmento da rota é o slug do schema: `#/ocorrencia/tabela/OCORRENCIA`,
+`#/recursos/tabela/EQUIPE`. A troca acontece por um seletor no topo do menu lateral.
+
+**Justificativa.** A página separada seria mais barata hoje e mais cara depois: duplicaria o
+`index.html` inteiro — cabeçalho, skiplink, menu, rodapé, VLibras — e o `verificar_conformidade.py`,
+que só lê `docs/index.html`, deixaria a cópia sem cobertura nenhuma. Um terceiro schema duplicaria de
+novo. O registro `SCHEMAS` faz o custo do próximo schema ser uma entrada no array e um `<script>`.
+
+**Detalhes que a decisão implica.**
+
+- **O registro fica no `app.js`, não no `dados*.js`.** Os arquivos de dados são gerados pelos
+  extratores; slug, rótulo e sistema são decisão de navegação, não de extração. Deixá-los no
+  `app.js` também evita regerar o dataset do `CAD_OCORRENCIA` só para acrescentar dois campos.
+- **Tudo que deriva do dataset é recalculado na troca.** `selecionarSchema()` refaz o grafo de FKs,
+  os grupos por prefixo, o índice de busca e a lateral, e zera o `mapaCache` — o layout de forças é
+  específico do grafo de cada schema e não pode vazar de um para o outro.
+- **Os links antigos continuam valendo.** `#/tabela/X`, `#/busca` e `#/mapa`, sem slug, são servidos
+  pelo schema padrão (o primeiro do registro). Sem redirecionamento: trocar o hash de quem chegou por
+  um link antigo mexeria no histórico do navegador por baixo do usuário.
+- **O seletor é uma lista de links, não um componente do DS.** O `br-select` do core precisa ser
+  instanciado pelo `core-init`, que roda depois do `app.js`; e um `<a>` já é navegável por teclado e
+  anunciável por leitor de tela sem ajuda. Com um único dataset carregado o `app.js` não escreve nada
+  no bloco e o `:empty` do CSS o esconde, devolvendo o menu ao formato de schema único.
+
+**Consequências.** O `verificar_conformidade.py` ganhou o grupo "Datasets dos schemas", que cobra a
+existência de cada arquivo de dados, o global que ele define e a ordem dos `<script>`. O
+`verificar_ganchos`, que já exigia elemento no `index.html` para cada `$("#id")` do `app.js`, passou
+a cobrir de graça os quatro ganchos novos (`#seletor-schema`, `#rotulo-schema`, `#atalho-inicio`,
+`#atalho-mapa`).
+
+---
+
+## ADR-009 — Os relacionamentos do CAD_RECURSOS vêm do diagrama, não do dicionário
+
+**Data:** 2026-08-14 · **Status:** aceita
+
+**Contexto.** O relatório do `CAD_RECURSOS` foi gerado com um perfil enxuto do Oracle SQL Developer
+Data Modeler. Ele traz Table Name, Description, Notes, Columns e Columns Comments — e só. Não traz as
+seções de índices, de chaves estrangeiras nem a volumetria em que o `tools/extrair_pdf.py` se apoia
+para montar o grafo do `CAD_OCORRENCIA`. Essas informações existem apenas no segundo PDF, o diagrama
+relacional, que desenha cada tabela como uma caixa com os marcadores `P`/`F`/`*`, os tipos físicos do
+banco e a lista de constraints.
+
+**Decisão.** Um extrator próprio, `tools/extrair_recursos.py`, que lê os dois PDFs e cruza as duas
+fontes, emitindo exatamente o mesmo formato do `extrair_pdf.py`. O `docs/app.js` consome os dois
+datasets sem nenhum ramo por schema.
+
+**Por que não parametrizar o `extrair_pdf.py`.** Os dois relatórios só compartilham o layout dos
+blocos de colunas. Um lê seções que o outro não tem, o outro precisa de um segundo documento e de uma
+etapa de cruzamento. Espremer os dois no mesmo despachante trocaria duas ferramentas legíveis por uma
+cheia de condicionais por origem.
+
+**Resolução do destino das FKs.** O diagrama nomeia a constraint e lista as colunas de origem, mas
+não diz para onde ela aponta. O extrator tenta, nesta ordem: (1) as colunas da FK são exatamente a PK
+de alguma tabela; (2) idem, depois de retirar o sufixo que marca o papel da coluna
+(`_RELACIONADA`, `_ORIGEM`, `_DESTINO`, `_PAI`, …), que é o que resolve
+`HISTORICO_EQUIPE.ID_EQUIPE_RELACIONADA` → `EQUIPE.ID_EQUIPE`; (3) o resto do nome da constraint,
+tirados o prefixo `FK_` e o nome da tabela de origem, casado contra um nome de tabela. O que não casa
+por nenhuma delas **aborta a extração**. Nenhum destino é chutado: uma aresta errada no mapa é pior
+do que um build vermelho.
+
+**Colunas que apontam para fora do schema.** `ID_AGENCIA` e `ID_REGIAO` referenciam tabelas de outro
+sistema e não têm marcador `F` no diagrama. Não viram aresta — a descrição de cada uma delas, no
+dicionário, já registra a origem (`SINESP-CAD`, o serviço REST e a periodicidade de atualização).
+
+**Cruzamento como validação.** As duas fontes marcam PK, FK e obrigatoriedade de forma independente,
+e o extrator compara as duas: divergência é erro, não preferência por uma delas. O tipo lógico
+(`NUMERIC (10)`) continua vindo do dicionário e é o exibido; o tipo físico (`NUMBER (10)`), que só o
+diagrama tem, entra no campo `tipo_fisico` e é o usado nos exports de DDL e Mermaid.
+
+**Uma armadilha do `find_tables()` que custou uma correção.** O `find_tables()` do pdfplumber
+delimita as linhas pelas bordas desenhadas. Quando a quebra de página corta uma linha da tabela, o
+PDF não desenha a borda de baixo dela e a linha inteira é descartada em silêncio — foi assim que a
+descrição de `EQUIPAMENTO.ID_AGENCIA` sumiu e o trecho que continuava na página seguinte acabou
+colado na coluna anterior, `TX_PREFIXO`. A correção oferece ao `find_tables()` uma borda logo abaixo
+do último texto da página, com a coordenada derivada do conteúdo. O alarme que faltava virou a
+checagem `validar_comentarios()`, que confere as descrições contra o texto cru das páginas — sem
+depender de borda nenhuma.

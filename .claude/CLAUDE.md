@@ -1,7 +1,8 @@
-# CLAUDE.md — Dicionário de Dados SINESP CAD 3
+# CLAUDE.md — Dicionário de Dados SINESP CAD
 
 Especializa o CLAUDE.md global. Site estático de dicionário de dados, aderente ao Padrão Digital de
-Governo, servido pelo GitHub Pages a partir de `docs/`.
+Governo, servido pelo GitHub Pages a partir de `docs/`. Publica dois schemas: `CAD_OCORRENCIA`
+(SINESP CAD 3) e `CAD_RECURSOS` (SINESP CAD 2).
 
 ## Stack travada
 
@@ -17,12 +18,17 @@ Sem alternativas. Desvios exigem justificativa técnica e decisão do Navegador.
 ## Comandos
 
 ```sh
-python tools/verificar_conformidade.py          # testes — 73 checagens, sai 1 se falhar
+python tools/verificar_conformidade.py          # testes — 84 checagens, sai 1 se falhar
 python -m http.server -d docs 8000              # rodar — http://localhost:8000
 python tools/baixar_assets_ds.py                # atualizar assets do DS
-python tools/extrair_pdf.py                     # regerar dados a partir do PDF
-cscript //Nologo //E:JScript docs\app.js        # validar sintaxe do JS (erro de runtime = ok)
+python tools/extrair_pdf.py                     # regerar o CAD_OCORRENCIA a partir do PDF
+python tools/extrair_recursos.py                # regerar o CAD_RECURSOS (dicionário + diagrama)
+node --check docs/app.js                        # validar sintaxe do JS
+cscript //Nologo //E:JScript docs\app.js        # idem, no Windows sem Node (erro de runtime = ok)
 ```
+
+Os extratores precisam de `pdfplumber` (`pip install -r tools/requirements.txt`); o site e o
+verificador não precisam de nada além da stdlib.
 
 ## Estrutura
 
@@ -31,11 +37,12 @@ docs/            o site (raiz publicada do GitHub Pages — NÃO colocar documen
   index.html     template base do DS
   app.js         aplicação inteira, ES5
   styles.css     complemento ao core.min.css
-  dados.js       gerado pelo extrator — não editar à mão
+  dados.js            CAD_OCORRENCIA — gerado pelo extrator, não editar à mão
+  dados-recursos.js   CAD_RECURSOS   — idem
   assets/        gov.br DS, Rawline, Font Awesome, logo — gerados por script
-data/            dicionario.json versionado (diff legível)
-fonte/           PDF original
-tools/           extrair_pdf.py, baixar_assets_ds.py, verificar_conformidade.py
+data/            os mesmos dados, versionados e indentados (diff legível)
+fonte/           PDFs originais
+tools/           extrair_pdf.py, extrair_recursos.py, baixar_assets_ds.py, verificar_conformidade.py
 documentacao/    docs do projeto: processo-negocio, arquitetura, decisoes (ADRs), CHANGELOG
 .claude/         PROBLEMA.md, PLANO.md, este arquivo
 ```
@@ -50,7 +57,21 @@ documentacao/    docs do projeto: processo-negocio, arquitetura, decisoes (ADRs)
   `.br-table` e injeta header/footer que brigam com a ordenação e o filtro (ADR-004).
 - **Ordem dos scripts importa:** `dados.js` → `app.js` → `core-init.min.js`. O core-init instancia
   os componentes sobre o DOM já montado pelo app.
-- **`dados.js` e `data/dicionario.json` são gerados.** Mudanças de dados se fazem no extrator.
+- **Os `dados*.js` e os `data/*.json` são gerados.** Mudanças de dados se fazem no extrator.
+- **Schema novo entra pelo registro `SCHEMAS`, no topo do `app.js`** (ADR-008), nunca por uma segunda
+  página HTML. São quatro passos: rodar o extrator, acrescentar o `<script>` no `index.html` antes do
+  `app.js`, acrescentar a entrada no array e a dupla (arquivo, global) em `DATASETS_ESPERADOS`, no
+  verificador.
+- **Rota é prefixada pelo slug do schema** (`#/recursos/tabela/EQUIPE`). Nunca escreva `"#/tabela/"`
+  à mão no `app.js`: use `rota("tabela/" + nome)`. Hashes sem slug caem no schema padrão e existem só
+  para não invalidar links antigos.
+- **O `CAD_RECURSOS` sai de dois PDFs.** O dicionário não tem índices nem FKs; eles vêm do diagrama
+  (ADR-009). O extrator aborta se não conseguir resolver o destino de uma FK — não invente um mapa
+  de exceções sem antes ler a regra de três passos que já está lá.
+- **`find_tables()` do pdfplumber perde a linha cortada pela quebra de página**, porque ela fica sem
+  borda de baixo. O `extrair_recursos.py` fecha essa borda e tem uma checagem
+  (`validar_comentarios`) que confere as descrições contra o texto cru. Se mexer nessa área, rode o
+  extrator e confira `EQUIPAMENTO.ID_AGENCIA`.
 - **Ícone sempre com `aria-hidden="true"`**; botão só-ícone sempre com `aria-label`.
 - **Chaves de objeto que sejam palavras reservadas vão entre aspas** (`"for"`), por segurança de
   parser.
