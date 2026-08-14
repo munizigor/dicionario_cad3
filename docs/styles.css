@@ -1,4 +1,4 @@
-/* Dicionário de Dados SINESP CAD 3 — complemento ao gov.br DS.
+/* Dicionário de Dados SINESP CAD — complemento ao gov.br DS.
  *
  * Este arquivo NÃO é autossuficiente: assume o core.min.css carregado antes e
  * usa os tokens do design system. Cobre só o que o DS não tem — a grade densa
@@ -39,6 +39,21 @@
 
 /* ---------- menu lateral ---------- */
 
+/* Seletor de schema. Fica acima do filtro porque troca o conteúdo inteiro da
+   lista abaixo dele — filtrar dentro de um schema é o passo seguinte, não o
+   anterior. Com um único dataset carregado o app.js não escreve nada aqui, e o
+   `:empty` faz o bloco desaparecer sem deixar borda órfã. */
+.menu-schemas {
+  padding-bottom: var(--spacing-scale-base);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+.menu-schemas:empty { display: none; }
+.menu-schemas .item-schema[aria-current="true"] {
+  background-color: var(--superficie-realce);
+  font-weight: var(--font-weight-semi-bold);
+  box-shadow: inset 3px 0 0 var(--interactive);
+}
+
 .menu-filtro {
   padding: var(--spacing-scale-2x) var(--spacing-scale-2x) var(--spacing-scale-base);
   border-bottom: var(--border-width) solid var(--border-color);
@@ -54,12 +69,14 @@
   color: var(--texto-fraco);
 }
 
-/* 71 itens numa lista rolante: com os 16px de padding vertical que o DS usa por
-   padrão cabem ~5 por tela. A variável existe no componente justamente para
-   ajustar densidade. */
-#lista-tabelas .menu-item { --menu-item-padding: var(--spacing-scale-half); }
+/* Dezenas de itens numa lista rolante: com os 16px de padding vertical que o DS
+   usa por padrão cabem ~5 por tela. A variável existe no componente justamente
+   para ajustar densidade. */
+#lista-tabelas .menu-item,
+#seletor-schema .menu-item { --menu-item-padding: var(--spacing-scale-half); }
 
-#lista-tabelas .grupo-titulo {
+#lista-tabelas .grupo-titulo,
+#seletor-schema .grupo-titulo {
   padding: var(--spacing-scale-baseh) var(--spacing-scale-2x) var(--spacing-scale-half);
   font-size: var(--font-size-scale-down-02);
   font-weight: var(--font-weight-semi-bold);
@@ -67,17 +84,20 @@
   text-transform: uppercase;
   color: var(--texto-fraco);
 }
-#lista-tabelas .menu-item {
+#lista-tabelas .menu-item,
+#seletor-schema .menu-item {
   font-family: var(--mono);
   font-size: var(--font-size-scale-down-01);
 }
 /* Nomes de tabela chegam a 29 caracteres em monoespaçada. Sem `min-width:0` o
    conteúdo flex usa `min-width:auto` e empurra o painel, em vez de quebrar. */
-#lista-tabelas .menu-item .content {
+#lista-tabelas .menu-item .content,
+#seletor-schema .menu-item .content {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-#lista-tabelas .menu-item .qtd {
+#lista-tabelas .menu-item .qtd,
+#seletor-schema .menu-item .qtd {
   margin-left: auto;
   padding-left: var(--spacing-scale-base);
   font-size: var(--font-size-scale-down-02);
@@ -112,8 +132,9 @@
 
 /* A partir de md o menu fica aberto de forma permanente e o gatilho some.
    Desvio deliberado do comportamento nativo do br-menu, que nasce fechado:
-   este menu é a navegação primária entre 71 tabelas, e com o padrão de origem
-   cada troca de tabela custaria dois cliques e uma reabertura (ADR-005).
+   este menu é a navegação primária entre as tabelas do schema, e com o padrão
+   de origem cada troca de tabela custaria dois cliques e uma reabertura
+   (ADR-005).
    Abaixo de 992px nada disso vale e o comportamento é 100% o do DS: offcanvas
    com véu, botão de fechar e controle de foco pelo BRMenu.
 

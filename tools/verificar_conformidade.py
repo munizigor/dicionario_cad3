@@ -47,6 +47,13 @@ ASSETS_ESPERADOS = [
     "assets/fontawesome/css/all.min.css",
 ]
 
+# Um arquivo de dados por schema publicado, com o global que o registro SCHEMAS
+# do app.js espera encontrar (ADR-008).
+DATASETS_ESPERADOS = [
+    ("dados.js", "window.DICIONARIO"),
+    ("dados-recursos.js", "window.DICIONARIO_RECURSOS"),
+]
+
 # Marcas do tema escuro e do menu artesanal, removidos na adequação.
 RESIDUOS = [
     (r"data-tema", "tema escuro (atributo data-tema)"),
@@ -291,6 +298,45 @@ def verificar_assets(rel, doc):
         rel.checar(g, versionado, "%s referenciado com ?v= (cache busting)" % arquivo)
 
 
+def verificar_datasets(rel, doc):
+    """Um schema publicado é um arquivo de dados carregado antes do app.js."""
+    g = rel.grupo("Datasets dos schemas")
+
+    scripts = [e["attrs"].get("src", "") for e in doc.elementos if e["tag"] == "script"]
+    scripts = [s for s in scripts if s]
+
+    def posicao(prefixo):
+        for i, src in enumerate(scripts):
+            if src.split("?")[0] == prefixo:
+                return i
+        return None
+
+    for arquivo, global_js in DATASETS_ESPERADOS:
+        indice = posicao(arquivo)
+        rel.checar(g, indice is not None, "%s carregado pelo index.html" % arquivo)
+        caminho = SITE / arquivo
+        rel.checar(g, caminho.exists(), "docs/%s existe no disco" % arquivo)
+        if caminho.exists():
+            # Basta o começo: os arquivos passam de 300 KB numa linha só.
+            cabeca = caminho.read_text(encoding="utf-8")[:400]
+            rel.checar(g, global_js in cabeca,
+                       "%s define %s" % (arquivo, global_js))
+
+    # O app monta o DOM a partir dos dados, e o core-init instancia os
+    # componentes do DS sobre o DOM pronto: a ordem dos três é obrigatória.
+    indices = [posicao(a) for a, _ in DATASETS_ESPERADOS]
+    app = posicao("app.js")
+    core = posicao("assets/govbr/core-init.min.js")
+    ordem_ok = (
+        app is not None and core is not None
+        and all(i is not None and i < app for i in indices)
+        and app < core
+    )
+    rel.checar(g, ordem_ok,
+               "ordem dos scripts: dados dos schemas → app.js → core-init.min.js",
+               "ordem encontrada: " + ", ".join(scripts))
+
+
 def verificar_institucional(rel, doc, fonte_index):
     g = rel.grupo("Elementos institucionais")
 
@@ -423,6 +469,7 @@ def main():
     verificar_ancoras(rel, doc)
     verificar_componentes(rel, doc, fonte_app)
     verificar_assets(rel, doc)
+    verificar_datasets(rel, doc)
     verificar_institucional(rel, doc, fonte_index)
     verificar_acessibilidade(rel, doc)
     verificar_residuos(rel, {

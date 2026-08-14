@@ -1,13 +1,45 @@
-/* Dicionário de Dados SINESP CAD 3 — aplicação estática, sem dependências.
- * Os dados vêm de dados.js (window.DICIONARIO), gerado por tools/extrair_pdf.py.
+/* Dicionário de Dados SINESP — aplicação estática, sem dependências.
+ * Os dados vêm dos arquivos gerados pelos extratores: dados.js
+ * (window.DICIONARIO, tools/extrair_pdf.py) e dados-recursos.js
+ * (window.DICIONARIO_RECURSOS, tools/extrair_recursos.py).
+ *
+ * O site serve mais de um schema. Cada dataset tem o mesmo formato, e tudo o
+ * que é derivado dele — grafo, grupos, índice de busca, mapa — é recalculado
+ * quando o schema ativo muda. Ver documentacao/decisoes.md, ADR-008.
  */
 (function () {
   "use strict";
 
-  var DADOS = window.DICIONARIO;
-  var TABELAS = DADOS.tabelas;
-  var POR_NOME = Object.create(null);
-  TABELAS.forEach(function (t) { POR_NOME[t.nome] = t; });
+  /* Registro dos schemas publicados. Fica aqui, e não no dados*.js, porque
+     aqueles arquivos são gerados: slug e rótulo são decisão de navegação, não
+     de extração. O filtro deixa o site funcionar mesmo que um dataset não
+     tenha sido carregado. */
+  var SCHEMAS = [
+    {
+      slug: "ocorrencia",
+      rotulo: "CAD_OCORRENCIA",
+      sistema: "SINESP CAD 3",
+      dados: window.DICIONARIO
+    },
+    {
+      slug: "recursos",
+      rotulo: "CAD_RECURSOS",
+      sistema: "SINESP CAD 2",
+      dados: window.DICIONARIO_RECURSOS
+    }
+  ].filter(function (s) { return s.dados && s.dados.tabelas; });
+
+  if (!SCHEMAS.length) throw new Error("Nenhum dicionário carregado.");
+
+  var POR_SLUG = Object.create(null);
+  SCHEMAS.forEach(function (s) { POR_SLUG[s.slug] = s; });
+
+  /* Estado do schema ativo. Reatribuído por selecionarSchema(); nada aqui pode
+     ser capturado em closure fora das funções que rodam depois da troca. */
+  var ATUAL = null;
+  var DADOS = null;
+  var TABELAS = null;
+  var POR_NOME = null;
 
   /* ------------------------------------------------------------------ *
    * Utilitários
@@ -74,26 +106,31 @@
    * Grafo de relacionamentos
    * ------------------------------------------------------------------ */
 
-  var ARESTAS = [];
-  TABELAS.forEach(function (t) {
-    t.fks_saida.forEach(function (fk) {
-      ARESTAS.push({
-        origem: t.nome,
-        destino: fk.tabela,
-        nome: fk.nome,
-        colunas: fk.colunas,
-        colunas_referidas: fk.colunas_referidas,
-        obrigatoria: fk.obrigatoria
+  var ARESTAS = null;
+  var VIZINHOS = null;
+
+  function montarGrafo() {
+    ARESTAS = [];
+    TABELAS.forEach(function (t) {
+      t.fks_saida.forEach(function (fk) {
+        ARESTAS.push({
+          origem: t.nome,
+          destino: fk.tabela,
+          nome: fk.nome,
+          colunas: fk.colunas,
+          colunas_referidas: fk.colunas_referidas,
+          obrigatoria: fk.obrigatoria
+        });
       });
     });
-  });
 
-  var VIZINHOS = Object.create(null);
-  TABELAS.forEach(function (t) { VIZINHOS[t.nome] = { entrada: [], saida: [] }; });
-  ARESTAS.forEach(function (a) {
-    VIZINHOS[a.origem].saida.push(a);
-    if (VIZINHOS[a.destino]) VIZINHOS[a.destino].entrada.push(a);
-  });
+    VIZINHOS = Object.create(null);
+    TABELAS.forEach(function (t) { VIZINHOS[t.nome] = { entrada: [], saida: [] }; });
+    ARESTAS.forEach(function (a) {
+      VIZINHOS[a.origem].saida.push(a);
+      if (VIZINHOS[a.destino]) VIZINHOS[a.destino].entrada.push(a);
+    });
+  }
 
   /** Colunas de uma tabela que participam de alguma FK de saída. */
   function fkDaColuna(tabela, nomeColuna) {
@@ -111,7 +148,9 @@
    * Agrupamento por prefixo (usado na lateral e na home)
    * ------------------------------------------------------------------ */
 
-  var GRUPOS = (function () {
+  var GRUPOS = null;
+
+  function montarGrupos() {
     var porPrefixo = Object.create(null);
     TABELAS.forEach(function (t) {
       var prefixo = t.nome.split("_")[0];
@@ -128,31 +167,64 @@
       soltas.sort(function (a, b) { return a.nome.localeCompare(b.nome); });
       grupos.push({ nome: "Outras", tabelas: soltas });
     }
-    return grupos;
-  })();
+    GRUPOS = grupos;
+  }
 
   /* ------------------------------------------------------------------ *
    * Índice de busca
    * ------------------------------------------------------------------ */
 
-  var INDICE = [];
-  TABELAS.forEach(function (t) {
-    INDICE.push({
-      tipo: "tabela",
-      tabela: t,
-      nomeNorm: normalizar(t.nome),
-      descNorm: normalizar(t.descricao)
-    });
-    t.colunas.forEach(function (c) {
+  var INDICE = null;
+
+  function montarIndice() {
+    INDICE = [];
+    TABELAS.forEach(function (t) {
       INDICE.push({
-        tipo: "coluna",
+        tipo: "tabela",
         tabela: t,
-        coluna: c,
-        nomeNorm: normalizar(c.nome),
-        descNorm: normalizar(c.descricao)
+        nomeNorm: normalizar(t.nome),
+        descNorm: normalizar(t.descricao)
+      });
+      t.colunas.forEach(function (c) {
+        INDICE.push({
+          tipo: "coluna",
+          tabela: t,
+          coluna: c,
+          nomeNorm: normalizar(c.nome),
+          descNorm: normalizar(c.descricao)
+        });
       });
     });
-  });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Schema ativo
+   * ------------------------------------------------------------------ */
+
+  /** Troca o schema ativo e recalcula tudo o que deriva dele. Idempotente. */
+  function selecionarSchema(slug) {
+    var schema = POR_SLUG[slug] || SCHEMAS[0];
+    if (schema === ATUAL) return;
+
+    ATUAL = schema;
+    DADOS = schema.dados;
+    TABELAS = DADOS.tabelas;
+    POR_NOME = Object.create(null);
+    TABELAS.forEach(function (t) { POR_NOME[t.nome] = t; });
+
+    montarGrafo();
+    montarGrupos();
+    montarIndice();
+    mapaCache = null;  // o layout de forças é específico do grafo do schema
+
+    montarSeletorSchema();
+    montarLateral($("#filtro-tabelas").value);
+  }
+
+  /** Monta um hash dentro do schema ativo: rota("tabela/X") → "#/recursos/tabela/X". */
+  function rota(sufixo) {
+    return "#/" + ATUAL.slug + (sufixo ? "/" + sufixo : "");
+  }
 
   function buscar(consulta) {
     var termos = normalizar(consulta).split(/\s+/).filter(Boolean);
@@ -257,6 +329,14 @@
     }
   }
 
+  /* O tipo físico Oracle é dado quando o extrator conseguiu lê-lo da fonte
+     (é o caso do CAD_RECURSOS, cujo diagrama traz os tipos do banco). Quando
+     não é, `tipoOracle` o deduz do tipo lógico do dicionário. */
+  function tipoFisico(coluna) {
+    if (coluna.tipo_fisico) return coluna.tipo_fisico.replace(/\s+\(/, "(");
+    return tipoOracle(coluna.tipo);
+  }
+
   function aspas(texto) { return "'" + String(texto).replace(/'/g, "''") + "'"; }
 
   function gerarDDL(tabela) {
@@ -270,7 +350,7 @@
     ];
 
     var partes = tabela.colunas.map(function (c) {
-      return "  " + c.nome + " " + tipoOracle(c.tipo) +
+      return "  " + c.nome + " " + tipoFisico(c) +
         (c.formula ? " DEFAULT " + c.formula : "") +
         (c.obrigatoria ? " NOT NULL" : "");
     });
@@ -362,7 +442,7 @@
     // Atributos apenas da tabela central, para o diagrama não explodir.
     var atributos = tabela.colunas.map(function (c) {
       var chave = c.pk ? " PK" : (c.fk ? " FK" : "");
-      return "    " + tipoOracle(c.tipo).replace(/[^A-Za-z0-9_]/g, "_") + " " + c.nome + chave;
+      return "    " + tipoFisico(c).replace(/[^A-Za-z0-9_]/g, "_") + " " + c.nome + chave;
     });
     linhas.push("  " + tabela.nome + " {", atributos.join("\n"), "  }");
 
@@ -381,10 +461,10 @@
   function caixaNo(nome, x, y, largura, altura, ehCentro) {
     return svgEl("g", {
       classe: "no-grupo",
-      onclick: function () { irPara("#/tabela/" + nome); },
+      onclick: function () { irPara(rota("tabela/" + nome)); },
       role: "link",
       tabindex: "0",
-      onkeydown: function (ev) { if (ev.key === "Enter") irPara("#/tabela/" + nome); }
+      onkeydown: function (ev) { if (ev.key === "Enter") irPara(rota("tabela/" + nome)); }
     }, [
       svgEl("title", { texto: nome }),
       svgEl("rect", { classe: "no-caixa" + (ehCentro ? " centro" : ""), x: x, y: y, width: largura, height: altura, rx: 5 }),
@@ -806,7 +886,7 @@
 
   function linkTabela(nome, rotulo) {
     if (!POR_NOME[nome]) return el("span", { texto: nome });
-    return el("a", { href: "#/tabela/" + nome, texto: rotulo || nome });
+    return el("a", { href: rota("tabela/" + nome), texto: rotulo || nome });
   }
 
   /* Ícone Font Awesome. Sempre aria-hidden: o rótulo acessível vem do texto ao
@@ -923,7 +1003,7 @@
           el("td", { classe: "col-num", texto: c.no, "data-th": "Nº" }),
           el("td", { classe: "col-nome", "data-th": "Coluna" }, [
             el("a", {
-              href: "#/tabela/" + tabela.nome + "?col=" + encodeURIComponent(c.nome),
+              href: rota("tabela/" + tabela.nome) + "?col=" + encodeURIComponent(c.nome),
               texto: c.nome
             })
           ]),
@@ -937,7 +1017,7 @@
             icone("long-arrow-alt-right"),
             document.createTextNode(" "),
             el("a", {
-              href: "#/tabela/" + alvoFk.tabela + "?col=" + encodeURIComponent(alvoFk.coluna),
+              href: rota("tabela/" + alvoFk.tabela) + "?col=" + encodeURIComponent(alvoFk.coluna),
               texto: alvoFk.tabela + "." + alvoFk.coluna
             })
           ]) : null
@@ -993,7 +1073,8 @@
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
       el("h1", { texto: meta.titulo }),
       el("p", { classe: "descricao-tabela", texto:
-        "Versão navegável do dicionário de dados do SINESP CAD 3" })
+        "Versão navegável do dicionário de dados do schema " + ATUAL.rotulo +
+        ", do " + ATUAL.sistema + "." })
     ]));
 
     var cartoes = [
@@ -1012,14 +1093,14 @@
     })));
 
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      el("a", { classe: "br-button primary", href: "#/mapa" }, [
+      el("a", { classe: "br-button primary", href: rota("mapa") }, [
         icone("project-diagram"), document.createTextNode("Ver mapa de relacionamentos")
       ]),
       // botao("Baixar dicionário completo (JSON)", "file-code", function () {
-      //   baixar("dicionario-cad3.json", JSON.stringify(DADOS, null, 2), "application/json");
+      //   baixar("dicionario-" + ATUAL.slug + ".json", JSON.stringify(DADOS, null, 2), "application/json");
       // }, "secondary"),
       // botao("Baixar DDL de todas as tabelas", "database", function () {
-      //   baixar("cad3-ddl-completo.sql", TABELAS.map(gerarDDL).join("\n"), "text/plain");
+      //   baixar(ATUAL.slug + "-ddl-completo.sql", TABELAS.map(gerarDDL).join("\n"), "text/plain");
       // }, "secondary")
     ]));
 
@@ -1216,7 +1297,7 @@
       frag.appendChild(el("article", { classe: "br-card resultado mb-3" }, [
         el("div", { classe: "card-content" }, [
           el("h3", {}, [
-            el("a", { href: "#/tabela/" + grupo.tabela.nome }, [destacar(grupo.tabela.nome, consulta)]),
+            el("a", { href: rota("tabela/" + grupo.tabela.nome) }, [destacar(grupo.tabela.nome, consulta)]),
             el("span", { classe: "contagem", texto: grupo.tabela.colunas.length + " colunas" })
           ]),
           grupo.tabela.descricao
@@ -1225,7 +1306,7 @@
           colunas.length ? el("ul", {}, colunas.map(function (c) {
             return el("li", {}, [
               el("a", {
-                href: "#/tabela/" + grupo.tabela.nome + "?col=" + encodeURIComponent(c.nome),
+                href: rota("tabela/" + grupo.tabela.nome) + "?col=" + encodeURIComponent(c.nome),
                 classe: "nome-col"
               }, [destacar(c.nome, consulta)]),
               el("span", { classe: "tipo-col", texto: c.tipo }),
@@ -1267,7 +1348,7 @@
         ARESTAS.forEach(function (a) {
           linhas.push("  " + a.destino + " ||--o{ " + a.origem + " : " + JSON.stringify(a.nome));
         });
-        baixar("cad3-relacionamentos.mmd", linhas.join("\n") + "\n", "text/plain");
+        baixar(ATUAL.slug + "-relacionamentos.mmd", linhas.join("\n") + "\n", "text/plain");
       }, "secondary")
     ]));
 
@@ -1276,7 +1357,7 @@
     if (isoladas.length) {
       frag.appendChild(painel("Tabelas sem relacionamentos declarados", isoladas.length + " tabelas",
         el("div", { classe: "pilulas" }, isoladas.map(function (t) {
-          return el("a", { classe: "br-tag interaction-select", href: "#/tabela/" + t.nome }, [
+          return el("a", { classe: "br-tag interaction-select", href: rota("tabela/" + t.nome) }, [
             el("span", { texto: t.nome })
           ]);
         }))));
@@ -1293,7 +1374,7 @@
     frag.appendChild(mensagem("danger", "Tabela não encontrada.",
       "Não existe nenhuma tabela chamada “" + nome + "” neste dicionário."));
     frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
-      el("a", { classe: "br-button primary", href: "#/" }, [
+      el("a", { classe: "br-button primary", href: rota("") }, [
         icone("home"), document.createTextNode("Voltar ao início")
       ])
     ]));
@@ -1307,6 +1388,35 @@
   var listaLateral = $("#lista-tabelas");
   var contador = $("#contador-tabelas");
   var itensLaterais = Object.create(null);
+
+  /* Seletor de schema, no topo do menu lateral. É uma lista de links comuns —
+     não um componente do DS — porque o `br-select` do core exige instanciação
+     pelo core-init, que roda depois deste arquivo, e porque um link já é
+     navegável por teclado e anunciável por leitor de tela sem ajuda. Com um
+     único schema carregado a lista fica vazia e o CSS a esconde. */
+  function montarSeletorSchema() {
+    var caixa = $("#seletor-schema");
+    limpar(caixa);
+
+    $("#rotulo-schema").textContent = ATUAL.sistema + " · " + ATUAL.rotulo;
+    $("#atalho-inicio").setAttribute("href", rota(""));
+    $("#atalho-mapa").setAttribute("href", rota("mapa"));
+
+    if (SCHEMAS.length < 2) return;
+
+    caixa.appendChild(el("div", { classe: "grupo-titulo", texto: "Schema" }));
+    SCHEMAS.forEach(function (schema) {
+      var props = {
+        classe: "menu-item item-schema", href: "#/" + schema.slug,
+        title: schema.rotulo + " — " + schema.sistema
+      };
+      if (schema === ATUAL) props["aria-current"] = "true";
+      caixa.appendChild(el("a", props, [
+        el("span", { classe: "content", texto: schema.rotulo }),
+        el("span", { classe: "qtd", texto: schema.dados.tabelas.length })
+      ]));
+    });
+  }
 
   function montarLateral(filtro) {
     limpar(listaLateral);
@@ -1324,7 +1434,7 @@
       tabelas.forEach(function (t) {
         var item = el("a", {
           classe: "menu-item", role: "treeitem",
-          href: "#/tabela/" + t.nome, title: t.descricao || t.nome
+          href: rota("tabela/" + t.nome), title: t.descricao || t.nome
         }, [
           el("span", { classe: "content", texto: t.nome }),
           el("span", { classe: "qtd", texto: t.colunas.length })
@@ -1365,7 +1475,7 @@
     limpar(lista);
 
     lista.appendChild(el("li", { classe: "crumb home" }, [
-      el("a", { classe: "br-button circle", href: "#/" }, [
+      el("a", { classe: "br-button circle", href: rota("") }, [
         el("span", { classe: "sr-only", texto: "Página inicial" }),
         icone("home")
       ])
@@ -1378,6 +1488,10 @@
     ]));
   }
 
+  /* O primeiro segmento da rota é o slug do schema: #/recursos/tabela/EQUIPE.
+     Links antigos, sem o slug (#/tabela/X, #/busca, #/mapa), continuam valendo
+     e são servidos pelo schema padrão — sem redirecionar, para não trocar o
+     histórico do navegador por baixo de quem chegou pelo link. */
   function rotear() {
     var bruto = location.hash.replace(/^#/, "") || "/";
     var partes = bruto.split("?");
@@ -1385,8 +1499,12 @@
     var parametros = new URLSearchParams(partes[1] || "");
     var conteudo = $("#main-content");
 
+    var slug = POR_SLUG[caminho[0]] ? caminho.shift() : SCHEMAS[0].slug;
+    selecionarSchema(slug);
+
     limpar(conteudo);
-    document.title = "Dicionário de Dados — SINESP CAD 3";
+    var sufixo = " — Dicionário " + ATUAL.rotulo;
+    document.title = DADOS.meta.titulo;
 
     if (!caminho.length) {
       conteudo.appendChild(paginaInicial());
@@ -1397,19 +1515,19 @@
       conteudo.appendChild(paginaTabela(nome, parametros.get("col")));
       montarTrilha(nome);
       marcarAtual(nome);
-      if (POR_NOME[nome]) document.title = nome + " — Dicionário CAD 3";
+      if (POR_NOME[nome]) document.title = nome + sufixo;
     } else if (caminho[0] === "busca") {
       var consulta = parametros.get("q") || "";
       $("#busca-global").value = consulta;
       conteudo.appendChild(paginaBusca(consulta));
       montarTrilha("Busca");
       marcarAtual(null);
-      document.title = "Busca: " + consulta + " — Dicionário CAD 3";
+      document.title = "Busca: " + consulta + sufixo;
     } else if (caminho[0] === "mapa") {
       conteudo.appendChild(paginaMapa());
       montarTrilha("Mapa de relacionamentos");
       marcarAtual(null);
-      document.title = "Mapa de relacionamentos — Dicionário CAD 3";
+      document.title = "Mapa de relacionamentos" + sufixo;
     } else {
       conteudo.appendChild(paginaNaoEncontrada(bruto));
       montarTrilha("Não encontrada");
@@ -1433,11 +1551,13 @@
   }
 
   function iniciar() {
-    montarLateral("");
+    // A lateral e o seletor são montados por selecionarSchema(), que rotear()
+    // chama com o slug da rota corrente — inclusive na primeira passagem, no
+    // fim desta função. Aqui só se ligam os eventos.
 
     $("#filtro-tabelas").addEventListener("input", function (ev) {
       montarLateral(ev.target.value);
-      var atual = location.hash.match(/^#\/tabela\/([^?]+)/);
+      var atual = location.hash.match(/\/tabela\/([^?]+)/);
       if (atual) marcarAtual(decodeURIComponent(atual[1]));
     });
 
@@ -1447,15 +1567,15 @@
       clearTimeout(temporizador);
       temporizador = setTimeout(function () {
         var valor = campoBusca.value.trim();
-        if (valor.length >= 2) irPara("#/busca?q=" + encodeURIComponent(valor));
-        else if (!valor && location.hash.indexOf("#/busca") === 0) irPara("#/");
+        if (valor.length >= 2) irPara(rota("busca") + "?q=" + encodeURIComponent(valor));
+        else if (!valor && location.hash.indexOf(rota("busca")) === 0) irPara(rota(""));
       }, 220);
     });
 
     $("#form-busca").addEventListener("submit", function (ev) {
       ev.preventDefault();
       var valor = campoBusca.value.trim();
-      if (valor) irPara("#/busca?q=" + encodeURIComponent(valor));
+      if (valor) irPara(rota("busca") + "?q=" + encodeURIComponent(valor));
     });
 
     document.addEventListener("keydown", function (ev) {
