@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dicionário de Dados — SINESP CAD</title>
-<meta name="description" content="Dicionário de dados navegável dos schemas CAD_OCORRENCIA, do SINESP CAD 3, e CAD_RECURSOS, do SINESP CAD 2.">
+<meta name="description" content="Dicionário de dados navegável dos schemas CAD_OCORRENCIA, do SINESP CAD 3, e CAD_RECURSOS, do SINESP CAD 2, e documentação das APIs do CAD.">
 
 <!-- Padrão Digital de Governo — assets vendorizados por tools/baixar_assets_ds.py.
      Nada aqui vem de CDN: ver documentacao/decisoes.md, ADR-003. A fonte Raleway,
@@ -19,7 +19,7 @@
      assets do DS são imutáveis dentro de uma versão.
      IMPORTANTE: incremente o número ao editar styles.css ou app.js — sem isso,
      quem já visitou o site continua vendo a versão anterior por dias. -->
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 
 <!-- TODO: trocar pelo favicon do órgão antes de publicar. -->
 <link rel="icon" href="assets/img/govbr.png">
@@ -57,6 +57,7 @@
               <!-- Os href seguem o schema ativo; o app.js os reescreve a cada troca. -->
               <a class="br-item" id="atalho-inicio" href="#/">Início</a>
               <a class="br-item" id="atalho-mapa" href="#/mapa">Mapa de relacionamentos</a>
+              <a class="br-item" id="atalho-apis" href="#/apis">APIs</a>
             </div>
           </div>
           <span class="br-divider vertical mx-half mx-sm-1"></span>
@@ -122,7 +123,8 @@
 
               <div class="menu-header">
                 <div class="menu-title">
-                  <span>Tabelas do dicionário</span>
+                  <!-- O app.js troca o texto quando a lateral lista endpoints. -->
+                  <span id="titulo-menu">Tabelas do dicionário</span>
                 </div>
                 <div class="menu-close">
                   <button class="br-button circle" type="button" aria-label="Fechar o menu" data-dismiss="menu">
@@ -144,7 +146,7 @@
               <div class="menu-filtro">
                 <div class="br-input">
                   <label for="filtro-tabelas">
-                    Filtrar tabelas
+                    <span id="rotulo-filtro">Filtrar tabelas</span>
                     <span class="contador" id="contador-tabelas" aria-live="polite"></span>
                   </label>
                   <input id="filtro-tabelas" type="search" placeholder="Filtrar tabelas…"
@@ -197,9 +199,11 @@
      arquivo de dados por schema; o registro SCHEMAS do app.js os reúne. -->
 <script src="dados.js"></script>
 <script src="dados-recursos.js"></script>
+<!-- APIs do CAD: gerado por tools/extrair_apis.py (ADR-011). -->
+<script src="dados-apis.js"></script>
 <!-- Guias de colunas: conteúdo escrito à mão, não gerado (ADR-010). -->
 <script src="guias.js?v=1"></script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 <script src="assets/govbr/core-init.min.js"></script>
 </body>
 </html>

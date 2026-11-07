@@ -12,6 +12,8 @@ Dicionário PDF                →  tools/extrair_pdf.py       →  data/diciona
 
 Dicionário PDF + diagrama PDF →  tools/extrair_recursos.py  →  data/dicionario_recursos.json
 (CAD_RECURSOS)                                              →  docs/dados-recursos.js
+OpenAPI JSON + Markdown       →  tools/extrair_apis.py     →  data/apis.json
+(APIs do CAD)                                               →  docs/dados-apis.js
 
 docs/index.html   template base do gov.br DS (header, menu, breadcrumb, footer)
 docs/app.js       roteador, renderização, busca, diagramas e exportações — ES5, sem dependências
@@ -73,7 +75,7 @@ Uma IIFE em `"use strict"`, dividida em blocos comentados:
 ## Integração com o design system
 
 O `core-init.min.js` roda por último e instancia sozinho todos os componentes `.br-*` presentes no
-DOM. Por isso a ordem dos scripts importa: `dados.js` e `dados-recursos.js` → `app.js` (monta menu e
+DOM. Por isso a ordem dos scripts importa: `dados.js`, `dados-recursos.js` e `dados-apis.js` → `app.js` (monta menu e
 trilha) → `core-init.min.js`. O verificador cobra essa ordem.
 
 Essa instanciação automática é também o motivo de a grade de colunas **não** levar a classe
@@ -93,7 +95,7 @@ verificador para isso na seção seguinte.
 ## Verificação
 
 ```sh
-python tools/verificar_conformidade.py     # 87 checagens; sai 1 se alguma falhar
+python tools/verificar_conformidade.py     # 93 checagens; sai 1 se alguma falhar
 python -m http.server -d docs 8000         # http://localhost:8000
 ```
 

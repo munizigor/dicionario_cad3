@@ -44,6 +44,23 @@
     g.colunas.forEach(function (chave) { GUIA_POR_COLUNA[g.schema + ":" + chave] = g; });
   });
 
+  /* APIs do CAD (docs/dados-apis.js, gerado por tools/extrair_apis.py). Não são
+     um schema: vivem em #/apis/..., fora do prefixo de schema, e quando estão
+     em exibição a lateral lista endpoints em vez de tabelas (ADR-011). */
+  var APIS_DADOS = window.APIS || null;
+  var APIS = APIS_DADOS ? APIS_DADOS.apis : [];
+  var API_POR_SLUG = Object.create(null);
+  var ENTIDADES = Object.create(null);
+  APIS.forEach(function (api) {
+    API_POR_SLUG[api.slug] = api;
+    api.porSlug = Object.create(null);
+    api.endpoints.forEach(function (e) { api.porSlug[e.slug] = e; e.api = api; });
+  });
+  if (APIS_DADOS) APIS_DADOS.entidades.forEach(function (en) { ENTIDADES[en.slug] = en; });
+
+  /* O que a lateral mostra: "schema" (tabelas do schema ativo) ou "apis". */
+  var MODO = null;
+
   /* Estado do schema ativo. Reatribuído por selecionarSchema(); nada aqui pode
      ser capturado em closure fora das funções que rodam depois da troca. */
   var ATUAL = null;
@@ -214,19 +231,32 @@
   /** Troca o schema ativo e recalcula tudo o que deriva dele. Idempotente. */
   function selecionarSchema(slug) {
     var schema = POR_SLUG[slug] || SCHEMAS[0];
-    if (schema === ATUAL) return;
+    if (schema === ATUAL && MODO === "schema") return;
 
-    ATUAL = schema;
-    DADOS = schema.dados;
-    TABELAS = DADOS.tabelas;
-    POR_NOME = Object.create(null);
-    TABELAS.forEach(function (t) { POR_NOME[t.nome] = t; });
+    if (schema !== ATUAL) {
+      ATUAL = schema;
+      DADOS = schema.dados;
+      TABELAS = DADOS.tabelas;
+      POR_NOME = Object.create(null);
+      TABELAS.forEach(function (t) { POR_NOME[t.nome] = t; });
 
-    montarGrafo();
-    montarGrupos();
-    montarIndice();
-    mapaCache = null;  // o layout de forças é específico do grafo do schema
+      montarGrafo();
+      montarGrupos();
+      montarIndice();
+      mapaCache = null;  // o layout de forças é específico do grafo do schema
+    }
 
+    MODO = "schema";
+    montarSeletorSchema();
+    montarLateral($("#filtro-tabelas").value);
+  }
+
+  /** Põe a lateral no modo de APIs. O schema ativo continua carregado, porque a
+      trilha e a busca de tabelas dependem dele. */
+  function ativarApis() {
+    if (!ATUAL) selecionarSchema(SCHEMAS[0].slug);
+    if (MODO === "apis") return;
+    MODO = "apis";
     montarSeletorSchema();
     montarLateral($("#filtro-tabelas").value);
   }
@@ -235,6 +265,15 @@
   function rota(sufixo) {
     return "#/" + ATUAL.slug + (sufixo ? "/" + sufixo : "");
   }
+
+  /** Hash das APIs, que não têm prefixo de schema: rotaApi("agente-operacional/x"). */
+  function rotaApi(sufixo) {
+    return "#/apis" + (sufixo ? "/" + sufixo : "");
+  }
+
+  /** A busca e o início acompanham o modo da lateral. */
+  function rotaBusca() { return MODO === "apis" ? rotaApi("busca") : rota("busca"); }
+  function rotaInicio() { return MODO === "apis" ? rotaApi("") : rota(""); }
 
   function guiaDaColuna(nomeTabela, nomeColuna) {
     return GUIA_POR_COLUNA[ATUAL.slug + ":" + nomeTabela + "." + nomeColuna] || null;
@@ -1126,6 +1165,9 @@
       el("a", { classe: "br-button primary", href: rota("mapa") }, [
         icone("project-diagram"), document.createTextNode("Ver mapa de relacionamentos")
       ]),
+      APIS.length ? el("a", { classe: "br-button secondary", href: rotaApi("") }, [
+        icone("plug"), document.createTextNode("Ver as APIs do CAD")
+      ]) : null,
       // botao("Baixar dicionário completo (JSON)", "file-code", function () {
       //   baixar("dicionario-" + ATUAL.slug + ".json", JSON.stringify(DADOS, null, 2), "application/json");
       // }, "secondary"),
@@ -1302,25 +1344,35 @@
     ]);
   }
 
-  function paginaBusca(consulta) {
+  /* A busca cobre as tabelas do schema ativo e os endpoints das APIs. Com a
+     lateral em modo de APIs, os endpoints vêm primeiro. */
+  function paginaBusca(consulta, endpointsPrimeiro) {
     var frag = document.createDocumentFragment();
     var resultados = buscar(consulta);
+    var endpoints = buscarEndpoints(consulta);
+
+    var resumo = [];
+    if (resultados.length) resumo.push(plural(resultados.length, "tabela encontrada", "tabelas encontradas") +
+      " em " + ATUAL.rotulo);
+    if (endpoints.length) resumo.push(plural(endpoints.length, "endpoint encontrado", "endpoints encontrados"));
 
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
       el("h1", { classe: "text-up-03" }, [
         document.createTextNode("Busca por "),
         el("span", { classe: "col-nome", texto: "“" + consulta + "”" })
       ]),
-      el("p", { classe: "descricao-tabela", texto:
-        resultados.length ? plural(resultados.length, "tabela encontrada", "tabelas encontradas")
-          : "Nenhum resultado." })
+      el("p", { classe: "descricao-tabela", texto: resumo.length ? resumo.join(" · ") : "Nenhum resultado." })
     ]));
 
-    if (!resultados.length) {
+    if (!resultados.length && !endpoints.length) {
       frag.appendChild(mensagem("info", "Nenhum resultado.",
-        "Nenhuma tabela ou coluna corresponde a “" + consulta + "”."));
+        "Nenhuma tabela, coluna ou endpoint corresponde a “" + consulta + "”."));
       return frag;
     }
+
+    var painelEndpoints = endpoints.length ? painel("Endpoints das APIs",
+      plural(endpoints.length, "endpoint", "endpoints"), listaEndpoints(endpoints.slice(0, 40), true)) : null;
+    if (endpointsPrimeiro && painelEndpoints) frag.appendChild(painelEndpoints);
 
     resultados.slice(0, 60).forEach(function (grupo) {
       var colunas = grupo.colunas.slice(0, 12);
@@ -1355,6 +1407,7 @@
         "Exibindo as 60 tabelas mais relevantes de " + resultados.length + ". Refine a busca para ver o restante."));
     }
 
+    if (!endpointsPrimeiro && painelEndpoints) frag.appendChild(painelEndpoints);
     return frag;
   }
 
@@ -1398,19 +1451,56 @@
     return frag;
   }
 
-  /* Texto com trechos entre crases: cada `trecho` vira <code>, o resto texto. */
+  /* Texto com marcação mínima, a mesma que guias.js e dados-apis.js usam:
+     `trecho` vira <code>, **trecho** vira <strong>, *trecho* vira <em> e
+     [rótulo](api:destino) vira link para #/apis/destino. Tudo por createElement. */
+  var RE_MARCACAO = /`([^`]+)`|\*\*([^*]+)\*\*|\*([^*\s][^*]*)\*|\[([^\]]+)\]\(([^)]+)\)/g;
+
   function textoRico(texto) {
-    return String(texto).split("`").map(function (parte, i) {
-      return i % 2 ? el("code", { texto: parte }) : document.createTextNode(parte);
-    });
+    // Uma regex por chamada: textoRico é recursivo (negrito, rótulo de link), e
+    // uma regex global compartilhada teria o lastIndex zerado pela chamada interna.
+    var re = new RegExp(RE_MARCACAO.source, "g");
+    var s = String(texto), nos = [], ultimo = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > ultimo) nos.push(document.createTextNode(s.slice(ultimo, m.index)));
+      if (m[1] !== undefined) nos.push(el("code", { texto: m[1] }));
+      else if (m[2] !== undefined) nos.push(el("strong", {}, textoRico(m[2])));
+      else if (m[3] !== undefined) nos.push(el("em", { texto: m[3] }));
+      else if (m[5].indexOf("api:") === 0) nos.push(el("a", { href: rotaApi(m[5].slice(4)) }, textoRico(m[4])));
+      else nos.push(document.createTextNode(m[4]));
+      ultimo = re.lastIndex;
+    }
+    if (ultimo < s.length) nos.push(document.createTextNode(s.slice(ultimo)));
+    return nos;
+  }
+
+  /* br-message com corpo em texto rico. Sem role="alert": é conteúdo estático
+     da página, e o alerta faria o leitor de tela interromper a leitura. */
+  function mensagemRica(tipo, titulo, corpo, itens) {
+    return el("div", { classe: "br-message " + tipo }, [
+      el("div", { classe: "icon" }, [
+        el("i", { classe: "fas fa-" + ICONE_MENSAGEM[tipo] + " fa-lg", "aria-hidden": "true" })
+      ]),
+      el("div", { classe: "content" }, [
+        titulo ? el("span", { classe: "message-title" }, textoRico(titulo)) : null,
+        el("span", { classe: "message-body corpo-rico" }, [document.createTextNode(" ")].concat(
+          Array.isArray(corpo) ? [] : textoRico(corpo),
+          [Array.isArray(corpo) || itens ? el("ul", { classe: "lista-avisos" },
+            (Array.isArray(corpo) ? corpo : itens).map(function (item) {
+              return el("li", {}, textoRico(item));
+            })) : null]))
+      ])
+    ]);
   }
 
   function blocoGuia(b) {
     switch (b.tipo) {
       case "p": return el("p", { classe: "texto-longo" }, textoRico(b.texto));
-      case "subtitulo": return el("h3", { classe: "subtitulo-guia", texto: b.texto });
+      case "subtitulo":
+        var nomeTag = b.nivel === 2 ? "h2" : b.nivel === 4 ? "h4" : "h3";
+        return el(nomeTag, { classe: "subtitulo-guia nivel-" + (b.nivel || 3) }, textoRico(b.texto));
       case "codigo": return el("pre", { classe: "codigo mb-3", texto: b.texto });
-      case "nota": return el("div", { classe: "mb-3" }, [mensagem(b.nivel, b.titulo, b.texto)]);
+      case "nota": return el("div", { classe: "mb-3" }, [mensagemRica(b.nivel, b.titulo, b.texto, b.itens)]);
       case "lista":
       case "checklist":
         return el("ul", { classe: b.tipo === "checklist" ? "lista-guia checklist" : "lista-guia" },
@@ -1430,7 +1520,7 @@
             el("tbody", {}, b.linhas.map(function (linha) {
               return el("tr", {}, linha.map(function (celula, i) {
                 return el("td", { "data-th": b.colunas[i] },
-                  emCodigo.indexOf(i) >= 0 ? [el("code", { texto: celula })] : [celula]);
+                  emCodigo.indexOf(i) >= 0 ? [el("code", { texto: celula })] : textoRico(celula));
               }));
             }))
           ])
@@ -1493,6 +1583,198 @@
     return frag;
   }
 
+  /* ------------------------------------------------------------------ *
+   * APIs
+   * ------------------------------------------------------------------ */
+
+  function seloMetodo(metodo) {
+    return el("span", { classe: "selo-metodo metodo-" + metodo.toLowerCase(), texto: metodo });
+  }
+
+  function linkEndpoint(e, comCaminho) {
+    return el("a", { classe: "link-endpoint", href: rotaApi(e.api.slug + "/" + e.slug) }, [
+      seloMetodo(e.metodo),
+      el("span", { classe: "titulo-endpoint", texto: e.titulo }),
+      comCaminho ? el("code", { classe: "caminho-endpoint", texto: e.caminho }) : null
+    ]);
+  }
+
+  function listaEndpoints(endpoints, comCaminho) {
+    return el("ul", { classe: "lista-endpoints" }, endpoints.map(function (e) {
+      return el("li", {}, [linkEndpoint(e, comCaminho)]);
+    }));
+  }
+
+  /* Endpoints de outra API que tratam da mesma entidade, agrupados por API. */
+  function correspondentes(entidade, apiExcluida) {
+    return APIS.filter(function (a) { return a !== apiExcluida; }).map(function (a) {
+      return { api: a, endpoints: a.endpoints.filter(function (e) { return e.entidade === entidade; }) };
+    }).filter(function (g) { return g.endpoints.length; });
+  }
+
+  function avisosRevisao(avisos, titulo) {
+    return el("div", { classe: "mb-4" }, [mensagemRica("warning", titulo, avisos)]);
+  }
+
+  function paginaApis() {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
+      el("h1", { texto: APIS_DADOS.meta.titulo }),
+      el("p", { classe: "descricao-tabela", texto:
+        "Duas APIs complementares, sem nenhum endpoint em comum. A do Agente Operacional atende " +
+        "o aplicativo usado em campo; a de Sistemas Externos atende sistemas integrados, sujeitos " +
+        "ao compartilhamento de dados por agência. Onde as duas tratam da mesma entidade, cada " +
+        "endpoint remete aos da outra." })
+    ]));
+
+    frag.appendChild(el("div", { classe: "grade-apis mb-4" }, APIS.map(function (api) {
+      return el("section", { classe: "br-card cartao-api" }, [
+        el("div", { classe: "card-content" }, [
+          el("h2", {}, [el("a", { href: rotaApi(api.slug), texto: api.titulo })]),
+          el("p", { classe: "subtitulo-api", texto: api.subtitulo }),
+          el("p", { classe: "texto-longo", texto: api.descricao }),
+          el("div", { classe: "pilulas" }, [
+            tag(api.formato),
+            api.versao ? tag("versão " + api.versao) : null,
+            tag(plural(api.endpoints.length, "endpoint", "endpoints")),
+            api.avisos.length ? el("span", { classe: "br-tag selo-aviso" }, [
+              icone("exclamation-triangle"), el("span", { texto: plural(api.avisos.length, "aviso", "avisos") })
+            ]) : null
+          ])
+        ])
+      ]);
+    })));
+
+    var linhas = Object.keys(ENTIDADES).map(function (chave) {
+      var en = ENTIDADES[chave];
+      return el("tr", {}, [
+        el("td", { "data-th": "Entidade" }, [
+          el("strong", { texto: en.nome }),
+          el("p", { classe: "descricao-entidade", texto: en.descricao })
+        ])
+      ].concat(APIS.map(function (api) {
+        return el("td", { "data-th": api.titulo }, [listaEndpoints(api.endpoints.filter(function (e) {
+          return e.entidade === chave;
+        }))]);
+      })));
+    });
+    frag.appendChild(painel("Entidades tratadas pelas duas APIs", null, el("div", { classe: "rolagem" }, [
+      el("table", { classe: "grade grade-entidades" }, [
+        el("caption", { classe: "sr-only", texto: "Endpoints de cada API por entidade" }),
+        el("thead", {}, [el("tr", {}, [el("th", { texto: "Entidade", scope: "col" })].concat(
+          APIS.map(function (api) { return el("th", { texto: api.titulo, scope: "col" }); })))]),
+        el("tbody", {}, linhas)
+      ])
+    ]), true));
+
+    frag.appendChild(el("p", { classe: "proveniencia", texto: "Origem: " +
+      APIS.map(function (a) { return a.fonte; }).join(" e ") + ". Gerado em " +
+      APIS_DADOS.meta.gerado_em + "." }));
+    return frag;
+  }
+
+  function paginaApi(api) {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
+      el("h1", { texto: api.titulo }),
+      el("p", { classe: "subtitulo-api", texto: api.subtitulo }),
+      el("p", { classe: "descricao-tabela", texto: api.descricao }),
+      el("div", { classe: "pilulas" }, [
+        tag(api.formato),
+        api.versao ? tag("versão " + api.versao) : null,
+        tag(plural(api.endpoints.length, "endpoint", "endpoints")),
+        el("code", { classe: "caminho-endpoint", texto: api.base })
+      ])
+    ]));
+
+    if (api.avisos.length) frag.appendChild(avisosRevisao(api.avisos, "Pontos de atenção nesta documentação."));
+
+    frag.appendChild(painel("Endpoints", api.endpoints.length + " endpoints", el("div", {},
+      api.grupos.map(function (g) {
+        return el("div", { classe: "grupo-endpoints" }, [
+          el("h3", { classe: "subtitulo-guia nivel-3", texto: g.nome }),
+          g.base ? el("code", { classe: "caminho-endpoint", texto: g.base }) : null,
+          listaEndpoints(g.endpoints.map(function (s) { return api.porSlug[s]; }), true)
+        ]);
+      }))));
+
+    frag.appendChild(painel("Visão geral", null, el("div", { classe: "secao-guia" },
+      api.visao.map(blocoGuia))));
+
+    frag.appendChild(el("p", { classe: "proveniencia", texto: "Origem: " + api.fonte + "." }));
+    return frag;
+  }
+
+  function paginaEndpoint(api, e) {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
+      el("h1", { classe: "titulo-pagina-endpoint", texto: e.titulo }),
+      el("p", { classe: "rota-endpoint" }, [seloMetodo(e.metodo), el("code", { texto: e.caminho })]),
+      el("div", { classe: "pilulas" }, [
+        el("a", { classe: "br-tag selo-link", href: rotaApi(api.slug) }, [el("span", { texto: api.titulo })]),
+        tag(e.grupo),
+        e.operation_id ? tag(e.operation_id) : null
+      ])
+    ]));
+
+    if (e.avisos.length) frag.appendChild(avisosRevisao(e.avisos, "Pontos de atenção neste endpoint."));
+
+    frag.appendChild(el("section", { classe: "br-card mb-4" }, [
+      el("h2", { classe: "card-header", texto: "Detalhes" }),
+      el("div", { classe: "card-content secao-guia" }, e.blocos.map(blocoGuia))
+    ]));
+
+    if (e.entidade && ENTIDADES[e.entidade]) {
+      var outros = correspondentes(e.entidade, api);
+      if (outros.length) {
+        var en = ENTIDADES[e.entidade];
+        frag.appendChild(painel("Na outra API: " + en.nome, null, el("div", {}, [
+          el("p", { classe: "texto-longo", texto: en.descricao })
+        ].concat(outros.map(function (g) {
+          return el("div", { classe: "grupo-endpoints" }, [
+            el("h3", { classe: "subtitulo-guia nivel-3" }, [
+              el("a", { href: rotaApi(g.api.slug), texto: g.api.titulo })
+            ]),
+            listaEndpoints(g.endpoints, true)
+          ]);
+        })))));
+      }
+    }
+
+    frag.appendChild(el("p", { classe: "proveniencia", texto: "Origem: " + api.fonte + "." }));
+    return frag;
+  }
+
+  function paginaApiNaoEncontrada(caminho) {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [el("h1", { texto: "Página não encontrada" })]));
+    frag.appendChild(mensagem("danger", "Página não encontrada.",
+      "Não existe nenhuma API ou endpoint em “" + caminho + "”."));
+    frag.appendChild(el("div", { classe: "barra-ferramentas" }, [
+      el("a", { classe: "br-button primary", href: rotaApi("") }, [
+        icone("plug"), document.createTextNode("Ver as APIs")
+      ])
+    ]));
+    return frag;
+  }
+
+  /** Endpoints cujo título, caminho, grupo ou API contêm todos os termos. */
+  function buscarEndpoints(consulta) {
+    var termos = normalizar(consulta).split(/\s+/).filter(Boolean);
+    if (!termos.length) return [];
+    var achados = [];
+    APIS.forEach(function (api) {
+      api.endpoints.forEach(function (e) {
+        var alvo = normalizar([e.titulo, e.caminho, e.metodo, e.grupo, api.titulo, e.operation_id].join(" "));
+        if (termos.every(function (t) { return alvo.indexOf(t) >= 0; })) {
+          var noTitulo = termos.filter(function (t) { return normalizar(e.titulo).indexOf(t) >= 0; }).length;
+          achados.push({ endpoint: e, pontos: noTitulo });
+        }
+      });
+    });
+    return achados.sort(function (a, b) { return b.pontos - a.pontos; }).map(function (a) { return a.endpoint; });
+  }
+
   function paginaNaoEncontrada(nome) {
     var frag = document.createDocumentFragment();
     frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
@@ -1525,11 +1807,16 @@
     var caixa = $("#seletor-schema");
     limpar(caixa);
 
-    $("#rotulo-schema").textContent = ATUAL.sistema + " · " + ATUAL.rotulo;
+    var apis = MODO === "apis";
+    $("#rotulo-schema").textContent = apis ? "APIs do CAD" : ATUAL.sistema + " · " + ATUAL.rotulo;
     $("#atalho-inicio").setAttribute("href", rota(""));
     $("#atalho-mapa").setAttribute("href", rota("mapa"));
+    // O título do menu e o rótulo do filtro dizem o que a lista contém.
+    $("#titulo-menu").textContent = apis ? "Endpoints das APIs" : "Tabelas do dicionário";
+    $("#rotulo-filtro").textContent = apis ? "Filtrar endpoints" : "Filtrar tabelas";
+    $("#filtro-tabelas").setAttribute("placeholder", apis ? "Filtrar endpoints…" : "Filtrar tabelas…");
 
-    if (SCHEMAS.length < 2) return;
+    if (SCHEMAS.length < 2 && !APIS.length) return;
 
     caixa.appendChild(el("div", { classe: "grupo-titulo", texto: "Schema" }));
     SCHEMAS.forEach(function (schema) {
@@ -1537,15 +1824,25 @@
         classe: "menu-item item-schema", href: "#/" + schema.slug,
         title: schema.rotulo + " — " + schema.sistema
       };
-      if (schema === ATUAL) props["aria-current"] = "true";
+      if (schema === ATUAL && !apis) props["aria-current"] = "true";
       caixa.appendChild(el("a", props, [
         el("span", { classe: "content", texto: schema.rotulo }),
         el("span", { classe: "qtd", texto: schema.dados.tabelas.length })
       ]));
     });
+
+    if (!APIS.length) return;
+    caixa.appendChild(el("div", { classe: "grupo-titulo", texto: "Serviços" }));
+    var props = { classe: "menu-item item-schema", href: rotaApi(""), title: "APIs do Agente Operacional e de Sistemas Externos" };
+    if (apis) props["aria-current"] = "true";
+    caixa.appendChild(el("a", props, [
+      el("span", { classe: "content", texto: "APIs" }),
+      el("span", { classe: "qtd", texto: APIS_DADOS.meta.total_endpoints })
+    ]));
   }
 
   function montarLateral(filtro) {
+    if (MODO === "apis") return montarLateralApis(filtro);
     limpar(listaLateral);
     itensLaterais = Object.create(null);
     var alvo = normalizar(filtro);
@@ -1574,6 +1871,39 @@
 
     if (!total) listaLateral.appendChild(el("p", { classe: "vazio-lista", texto: "Nenhuma tabela encontrada." }));
     contador.textContent = total + "/" + TABELAS.length;
+  }
+
+  /* Lateral no modo de APIs: um grupo por (API, grupo de endpoints). A chave de
+     cada item é "api/endpoint", a mesma que marcarAtual recebe. */
+  function montarLateralApis(filtro) {
+    limpar(listaLateral);
+    itensLaterais = Object.create(null);
+    var alvo = normalizar(filtro);
+    var total = 0;
+
+    APIS.forEach(function (api) {
+      api.grupos.forEach(function (grupo) {
+        var lista = grupo.endpoints.map(function (s) { return api.porSlug[s]; }).filter(function (e) {
+          return !alvo || normalizar([e.titulo, e.caminho, e.metodo, grupo.nome].join(" ")).indexOf(alvo) >= 0;
+        });
+        if (!lista.length) return;
+
+        listaLateral.appendChild(el("div", { classe: "grupo-titulo", texto: api.titulo + " · " + grupo.nome }));
+        lista.forEach(function (e) {
+          var chave = api.slug + "/" + e.slug;
+          var item = el("a", {
+            classe: "menu-item item-endpoint", role: "treeitem",
+            href: rotaApi(chave), title: e.metodo + " " + e.caminho
+          }, [seloMetodo(e.metodo), el("span", { classe: "content", texto: e.titulo })]);
+          itensLaterais[chave] = item;
+          listaLateral.appendChild(item);
+          total++;
+        });
+      });
+    });
+
+    if (!total) listaLateral.appendChild(el("p", { classe: "vazio-lista", texto: "Nenhum endpoint encontrado." }));
+    contador.textContent = total + "/" + APIS_DADOS.meta.total_endpoints;
   }
 
   function marcarAtual(nome) {
@@ -1633,6 +1963,13 @@
     var parametros = new URLSearchParams(partes[1] || "");
     var conteudo = $("#main-content");
 
+    if (caminho[0] === "apis" && APIS.length) {
+      rotearApis(caminho.slice(1).map(decodeURIComponent), parametros, conteudo);
+      window.scrollTo(0, 0);
+      fecharMenu();
+      return;
+    }
+
     var slug = POR_SLUG[caminho[0]] ? caminho.shift() : SCHEMAS[0].slug;
     selecionarSchema(slug);
 
@@ -1681,6 +2018,44 @@
     fecharMenu();
   }
 
+  /* #/apis, #/apis/busca, #/apis/<api> e #/apis/<api>/<endpoint>. */
+  function rotearApis(resto, parametros, conteudo) {
+    ativarApis();
+    limpar(conteudo);
+    var raiz = { rotulo: "APIs", href: rotaApi("") };
+    var sufixo = " — APIs do CAD";
+    var api = API_POR_SLUG[resto[0]];
+    var endpoint = api && resto[1] ? api.porSlug[resto[1]] : null;
+    document.title = "APIs do CAD";
+
+    if (!resto.length) {
+      conteudo.appendChild(paginaApis());
+      montarTrilha("APIs");
+      marcarAtual(null);
+    } else if (resto[0] === "busca") {
+      var consulta = parametros.get("q") || "";
+      $("#busca-global").value = consulta;
+      conteudo.appendChild(paginaBusca(consulta, true));
+      montarTrilha("Busca", [raiz]);
+      marcarAtual(null);
+      document.title = "Busca: " + consulta + sufixo;
+    } else if (api && resto.length === 1) {
+      conteudo.appendChild(paginaApi(api));
+      montarTrilha(api.titulo, [raiz]);
+      marcarAtual(null);
+      document.title = api.titulo + sufixo;
+    } else if (endpoint && resto.length === 2) {
+      conteudo.appendChild(paginaEndpoint(api, endpoint));
+      montarTrilha(endpoint.titulo, [raiz, { rotulo: api.titulo, href: rotaApi(api.slug) }]);
+      marcarAtual(api.slug + "/" + endpoint.slug);
+      document.title = endpoint.titulo + " · " + api.titulo + sufixo;
+    } else {
+      conteudo.appendChild(paginaApiNaoEncontrada(resto.join("/")));
+      montarTrilha("Não encontrada", [raiz]);
+      marcarAtual(null);
+    }
+  }
+
   /* ------------------------------------------------------------------ *
    * Interações globais
    * ------------------------------------------------------------------ */
@@ -1700,7 +2075,7 @@
 
     $("#filtro-tabelas").addEventListener("input", function (ev) {
       montarLateral(ev.target.value);
-      var atual = location.hash.match(/\/tabela\/([^?]+)/);
+      var atual = location.hash.match(/\/tabela\/([^?]+)/) || location.hash.match(/^#\/apis\/([^/?]+\/[^/?]+)/);
       if (atual) marcarAtual(decodeURIComponent(atual[1]));
     });
 
@@ -1710,15 +2085,15 @@
       clearTimeout(temporizador);
       temporizador = setTimeout(function () {
         var valor = campoBusca.value.trim();
-        if (valor.length >= 2) irPara(rota("busca") + "?q=" + encodeURIComponent(valor));
-        else if (!valor && location.hash.indexOf(rota("busca")) === 0) irPara(rota(""));
+        if (valor.length >= 2) irPara(rotaBusca() + "?q=" + encodeURIComponent(valor));
+        else if (!valor && location.hash.indexOf(rotaBusca()) === 0) irPara(rotaInicio());
       }, 220);
     });
 
     $("#form-busca").addEventListener("submit", function (ev) {
       ev.preventDefault();
       var valor = campoBusca.value.trim();
-      if (valor) irPara(rota("busca") + "?q=" + encodeURIComponent(valor));
+      if (valor) irPara(rotaBusca() + "?q=" + encodeURIComponent(valor));
     });
 
     document.addEventListener("keydown", function (ev) {

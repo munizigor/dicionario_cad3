@@ -421,6 +421,87 @@ table.grade-guia td:first-child { color: var(--gray-80); font-weight: var(--font
 .sumario-guia { margin: 0; columns: 2 16rem; }
 .sumario-guia li { break-inside: avoid; padding: 2px 0; }
 
+/* ---------- APIs ---------- */
+
+/* Selo do método HTTP. Não é .br-tag: no menu lateral a altura mínima do
+   br-tag desalinha o item. Tons 60 para GET e PUT: os tons 50 ficavam em 3,9:1
+   sobre o fundo tingido, abaixo do AA para texto pequeno. */
+.selo-metodo {
+  display: inline-block;
+  min-width: 3.4rem;
+  padding: 1px var(--spacing-scale-half);
+  border-radius: var(--surface-rounder-sm);
+  font: var(--font-weight-semi-bold) var(--font-size-scale-down-02) / 1.4 var(--mono);
+  letter-spacing: .02em;
+  text-align: center;
+  flex-shrink: 0;
+}
+.metodo-get { background-color: rgba(var(--green-cool-vivid-50-rgb), .1); color: var(--green-cool-vivid-60); }
+.metodo-post { background-color: rgba(var(--blue-warm-vivid-70-rgb), .1); color: var(--blue-warm-vivid-70); }
+.metodo-put { background-color: rgba(var(--orange-vivid-50-rgb), .1); color: var(--orange-vivid-60); }
+.metodo-patch { background-color: rgba(var(--violet-vivid-70-rgb), .1); color: var(--nn); }
+.metodo-delete { background-color: rgba(var(--red-vivid-50-rgb), .1); color: var(--red-vivid-60); }
+
+/* Na lateral, o título do endpoint quebra linha em vez de ser cortado. */
+#lista-tabelas .item-endpoint { align-items: flex-start; gap: var(--spacing-scale-base); }
+#lista-tabelas .item-endpoint .content { white-space: normal; font-family: var(--font-family-base); }
+
+.rota-endpoint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-scale-base);
+  margin: var(--spacing-scale-base) 0 0;
+}
+.rota-endpoint code,
+.caminho-endpoint {
+  font-family: var(--mono);
+  font-size: var(--font-size-scale-down-01);
+  color: var(--texto-suave);
+  overflow-wrap: anywhere;
+}
+.rota-endpoint code { font-size: var(--font-size-scale-base); color: var(--gray-80); }
+.titulo-pagina-endpoint { overflow-wrap: anywhere; }
+
+.lista-endpoints { margin: 0 0 var(--spacing-scale-2x); padding: 0; list-style: none; }
+.lista-endpoints li { padding: var(--spacing-scale-half) 0; border-top: var(--border-width) solid var(--border-color); }
+.lista-endpoints li:first-child { border-top: none; }
+.link-endpoint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-scale-half) var(--spacing-scale-base);
+  text-decoration: none;
+}
+.link-endpoint .titulo-endpoint { text-decoration: underline; }
+.link-endpoint .caminho-endpoint { flex-basis: 100%; padding-left: calc(3.4rem + var(--spacing-scale-base)); }
+.grupo-endpoints + .grupo-endpoints { margin-top: var(--spacing-scale-3x); }
+.grupo-endpoints > .caminho-endpoint { display: block; margin-bottom: var(--spacing-scale-base); }
+.grupo-endpoints .subtitulo-guia { margin-top: 0; }
+
+.grade-apis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--spacing-scale-2x);
+}
+.cartao-api h2 { margin: 0; font-size: var(--font-size-scale-up-03); }
+.subtitulo-api { margin: var(--spacing-scale-half) 0 var(--spacing-scale-base); color: var(--texto-fraco); font-size: var(--font-size-scale-down-01); }
+.br-tag.selo-aviso { background-color: rgba(var(--yellow-vivid-20-rgb), .55); color: var(--gray-80); }
+
+table.grade-entidades td { min-width: 14rem; }
+table.grade-entidades .lista-endpoints { margin: 0; }
+.descricao-entidade { margin: var(--spacing-scale-half) 0 0; color: var(--texto-suave); max-width: 22rem; }
+
+.corpo-rico { white-space: pre-line; }
+/* Nomes de esquema e URLs são identificadores longos sem espaço: sem isto, um
+   só deles alarga a página inteira no celular. */
+.secao-guia p, .secao-guia li, .secao-guia td, .corpo-rico, .lista-avisos { overflow-wrap: anywhere; }
+.lista-avisos { margin: var(--spacing-scale-base) 0 0; padding-left: var(--spacing-scale-3x); white-space: normal; }
+.lista-avisos li { margin-bottom: var(--spacing-scale-half); }
+.subtitulo-guia.nivel-2 { font-size: var(--font-size-scale-up-02); margin-top: var(--spacing-scale-4x); }
+.subtitulo-guia.nivel-4 { font-size: var(--font-size-scale-base); margin-top: var(--spacing-scale-2x); }
+.secao-guia pre.codigo { white-space: pre; }
+
 /* ---------- diagramas ---------- */
 
 /* SVG desenhado à mão, sem biblioteca: o DS não tem componente equivalente. */

@@ -52,6 +52,8 @@ ASSETS_ESPERADOS = [
 DATASETS_ESPERADOS = [
     ("dados.js", "window.DICIONARIO"),
     ("dados-recursos.js", "window.DICIONARIO_RECURSOS"),
+    # Não é um schema, mas segue a mesma regra: gerado, carregado antes do app.js.
+    ("dados-apis.js", "window.APIS"),
 ]
 
 # Marcas do tema escuro e do menu artesanal, removidos na adequação.
@@ -450,6 +452,7 @@ def verificar_funcionalidades(rel, fonte_app):
         (r'ev\.key === "/"', "atalho / para focar a busca"),
         (r"calcularMapa", "mapa de relacionamentos"),
         (r"paginaGuia", "páginas de guia de colunas"),
+        (r"paginaEndpoint", "páginas das APIs"),
     ]:
         rel.checar(g, re.search(padrao, fonte_app), descricao)
 
