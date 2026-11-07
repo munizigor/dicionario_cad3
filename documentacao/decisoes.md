@@ -313,3 +313,39 @@ texto, e o próximo guia passa a ser só uma entrada no array.
 incrementado quando o conteúdo mudar. O verificador cobra a existência do arquivo, a ordem do
 `<script>` e a presença da renderização de guias.
 
+---
+
+## ADR-011 — As APIs do CAD entram como seção própria, geradas das duas fontes
+
+**Data:** 2026-11-07 · **Status:** aceita
+
+**Contexto.** Além dos schemas, a equipe trabalha com duas APIs: a do Agente Operacional, descrita
+num OpenAPI 3 gerado pelo framework (`fonte/api_agente_operacional.json`), e a de Sistemas Externos,
+descrita em Markdown (`fonte/api_sistemas_externos.md`). O Markdown diz estar alinhado ao OpenAPI
+“CAD Serviços Agente Operacional” 0.7.2, mas as duas fontes não têm nenhum endpoint em comum: são
+APIs complementares, que tratam em parte das mesmas entidades (Unidades de Serviço e equipes,
+pessoas, equipamentos, posições) com contratos diferentes. As duas também têm lacunas: o OpenAPI
+quase não tem descrições nem respostas de erro, e o Markdown mistura convenções de paginação, datas e
+situação.
+
+**Decisão.** Uma seção “APIs” no mesmo site, em `#/apis`, com uma página por API e uma por endpoint.
+`tools/extrair_apis.py` lê as duas fontes e gera `docs/dados-apis.js` no formato de blocos que os
+guias já usavam (ADR-010), de modo que o `app.js` desenha as duas APIs sem ramo por fonte. Os
+endpoints que tratam da mesma entidade remetem uns aos outros. Os problemas encontrados na revisão
+aparecem nas páginas como avisos, por API e por endpoint.
+
+**Por que não é um schema.** O registro `SCHEMAS` (ADR-008) pressupõe tabelas, colunas e FKs. As APIs
+ficam fora do prefixo de schema; quando estão em exibição, a lateral passa ao modo `apis` e lista
+endpoints, e o seletor ganha a entrada “APIs”. O schema ativo continua carregado, porque a trilha e
+a busca de tabelas dependem dele.
+
+**Por que os avisos são calculados quando possível.** Contagens como “só N de M campos têm
+descrição” ou “nenhum endpoint em comum” são recalculadas a cada execução, para continuarem
+verdadeiras quando as fontes forem atualizadas. Os avisos que exigem leitura humana (contradições,
+convenções divergentes) ficam em `AVISOS_API` e `AVISOS_ENDPOINT`, e o extrator aborta se um deles
+citar um endpoint que deixou de existir.
+
+**Consequências.** `textoRico` passou a entender negrito, itálico e links internos `api:`, e as notas
+deixaram de usar `role="alert"`, impróprio para conteúdo estático. A busca inclui os endpoints. O
+verificador cobra `dados-apis.js` como os demais arquivos de dados.
+

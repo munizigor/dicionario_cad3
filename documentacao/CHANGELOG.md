@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-11-07 — APIs do CAD
+
+### Adicionado
+- Seção “APIs” em `#/apis` (ADR-011): catálogo das duas APIs, página de cada API e de cada um dos 73
+  endpoints (42 do Agente Operacional, 31 de Sistemas Externos), com remissão entre os endpoints que
+  tratam da mesma entidade e avisos de revisão por API e por endpoint.
+- `fonte/api_agente_operacional.json` e `fonte/api_sistemas_externos.md`.
+- `tools/extrair_apis.py`, que gera `data/apis.json` e `docs/dados-apis.js`. Só stdlib.
+- Entrada “APIs” no seletor da lateral e no Acesso Rápido; atalho na página inicial do schema.
+- A busca passa a listar também os endpoints.
+- Seis checagens no `tools/verificar_conformidade.py`: 93 no total.
+
+### Alterado
+- `textoRico` entende `**negrito**`, `*itálico*` e links `[rótulo](api:destino)`; células de tabela
+  dos guias passam por ele.
+- As notas dos guias deixaram de usar `role="alert"`.
+- `?v=` de `styles.css` e `app.js` incrementado para 7.
+
 ## 2026-11-07 — Correções de layout no mobile e nos selos do mapa
 
 ### Corrigido
