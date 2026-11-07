@@ -18,7 +18,7 @@ Sem alternativas. Desvios exigem justificativa técnica e decisão do Navegador.
 ## Comandos
 
 ```sh
-python tools/verificar_conformidade.py          # testes — 84 checagens, sai 1 se falhar
+python tools/verificar_conformidade.py          # testes — 87 checagens, sai 1 se falhar
 python -m http.server -d docs 8000              # rodar — http://localhost:8000
 python tools/baixar_assets_ds.py                # atualizar assets do DS
 python tools/extrair_pdf.py                     # regerar o CAD_OCORRENCIA a partir do PDF
@@ -39,6 +39,7 @@ docs/            o site (raiz publicada do GitHub Pages — NÃO colocar documen
   styles.css     complemento ao core.min.css
   dados.js            CAD_OCORRENCIA — gerado pelo extrator, não editar à mão
   dados-recursos.js   CAD_RECURSOS   — idem
+  guias.js            guias de colunas — escrito à mão (ADR-010)
   assets/        gov.br DS, Rawline, Font Awesome, logo — gerados por script
 data/            os mesmos dados, versionados e indentados (diff legível)
 fonte/           PDFs originais
@@ -58,6 +59,8 @@ documentacao/    docs do projeto: processo-negocio, arquitetura, decisoes (ADRs)
 - **Ordem dos scripts importa:** `dados.js` → `app.js` → `core-init.min.js`. O core-init instancia
   os componentes sobre o DOM já montado pelo app.
 - **Os `dados*.js` e os `data/*.json` são gerados.** Mudanças de dados se fazem no extrator.
+- **Guia de coluna entra pelo `docs/guias.js`** (ADR-010), associado por `TABELA.COLUNA`; a rota é
+  `rota("guia/" + slug)`. Ao mudar o conteúdo, incremente o `?v=` do `guias.js` no `index.html`.
 - **Schema novo entra pelo registro `SCHEMAS`, no topo do `app.js`** (ADR-008), nunca por uma segunda
   página HTML. São quatro passos: rodar o extrator, acrescentar o `<script>` no `index.html` antes do
   `app.js`, acrescentar a entrada no array e a dupla (arquivo, global) em `DATASETS_ESPERADOS`, no

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-11-07 — Guia da coluna DS_GRUPOS_ADICIONAIS
+
+### Adicionado
+- `fonte/Guia_do_Grupos_de_Dados_Adicionais.pdf`, fonte do guia.
+- `docs/guias.js` com o guia "Grupos de dados adicionais", servido em
+  `#/ocorrencia/guia/grupos-adicionais` (ADR-010).
+- Na grade de colunas e na busca, o nome `DS_GRUPOS_ADICIONAIS` passa a levar ao guia; a descrição
+  ganha o link "Como funciona".
+- Três checagens no `tools/verificar_conformidade.py`: 87 no total.
+
+### Alterado
+- `montarTrilha()` aceita passos intermediários; a trilha do guia passa pela tabela `OCORRENCIA`.
+- `?v=` de `styles.css` e `app.js` incrementado para 5.
+
 ## 2026-08-14 — Schema CAD_RECURSOS e navegação multi-schema
 
 O site passa a servir dois dicionários. O do `CAD_OCORRENCIA` continua igual; ao lado dele entra o

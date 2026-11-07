@@ -364,6 +364,36 @@ pre.codigo {
   white-space: pre;
 }
 
+/* ---------- guias de colunas ---------- */
+
+.marca-guia { margin-left: var(--spacing-scale-half); color: var(--interactive); font-size: .85em; }
+.colunas-guia { margin: var(--spacing-scale-2x) 0 0; font-size: var(--font-size-scale-down-01); color: var(--texto-fraco); }
+.colunas-guia a { font-family: var(--mono); font-weight: var(--font-weight-semi-bold); }
+.secao-guia { scroll-margin-top: 9rem; }
+.secao-guia:focus { outline: none; }
+.subtitulo-guia {
+  margin: var(--spacing-scale-3x) 0 var(--spacing-scale-base);
+  font-size: var(--font-size-scale-up-01);
+  font-weight: var(--font-weight-semi-bold);
+}
+.secao-guia .card-content > :first-child { margin-top: 0; }
+.secao-guia code,
+.descricao-tabela code {
+  padding: 0 var(--spacing-scale-half);
+  background: var(--superficie-suave);
+  border-radius: var(--surface-rounder-sm);
+  font-family: var(--mono);
+  font-size: .9em;
+}
+table.grade-guia td { color: var(--texto-suave); }
+table.grade-guia td:first-child { color: var(--gray-80); font-weight: var(--font-weight-semi-bold); }
+.lista-guia { max-width: 46rem; color: var(--texto-suave); }
+.lista-guia li { margin-bottom: var(--spacing-scale-half); }
+.lista-guia.checklist { padding-left: 0; list-style: none; }
+.lista-guia.checklist .fa-check-square { color: var(--interactive); }
+.sumario-guia { margin: 0; columns: 2 16rem; }
+.sumario-guia li { break-inside: avoid; padding: 2px 0; }
+
 /* ---------- diagramas ---------- */
 
 /* SVG desenhado à mão, sem biblioteca: o DS não tem componente equivalente. */
