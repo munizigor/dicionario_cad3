@@ -1226,7 +1226,7 @@
     if (tabela.constraints.length) {
       frag.appendChild(painel("Constraints", null, el("div", {}, tabela.constraints.map(function (ct) {
         return el("div", { classe: "mb-3" }, [
-          el("div", { classe: "col-nome", texto: [ct.tipo, ct.alvo].filter(Boolean).join(" · ").replace(/\n/g, " ") }),
+          el("div", { classe: "col-nome nome-constraint", texto: [ct.tipo, ct.alvo].filter(Boolean).join(" · ").replace(/\n/g, " ") }),
           el("pre", { classe: "codigo", texto: ct.detalhes.join("\n") })
         ]);
       }))));
@@ -1387,7 +1387,9 @@
     if (isoladas.length) {
       frag.appendChild(painel("Tabelas sem relacionamentos declarados", isoladas.length + " tabelas",
         el("div", { classe: "pilulas" }, isoladas.map(function (t) {
-          return el("a", { classe: "br-tag interaction-select", href: rota("tabela/" + t.nome) }, [
+          // `.br-tag` simples: a variante `interaction-select` do core pressupõe o
+          // par input+label e, num <a>, deixa texto branco sobre fundo transparente.
+          return el("a", { classe: "br-tag selo-link", href: rota("tabela/" + t.nome) }, [
             el("span", { texto: t.nome })
           ]);
         }))));
