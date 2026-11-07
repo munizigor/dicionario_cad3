@@ -285,3 +285,31 @@ colado na coluna anterior, `TX_PREFIXO`. A correção oferece ao `find_tables()`
 do último texto da página, com a coordenada derivada do conteúdo. O alarme que faltava virou a
 checagem `validar_comentarios()`, que confere as descrições contra o texto cru das páginas — sem
 depender de borda nenhuma.
+
+---
+
+## ADR-010 — Guias de colunas em `docs/guias.js`, escritos à mão
+
+**Data:** 2026-11-07 · **Status:** aceita
+
+**Contexto.** Algumas colunas guardam conteúdo estruturado que uma linha de descrição não explica. O
+caso que motivou a decisão é `OCORRENCIA.DS_GRUPOS_ADICIONAIS`, um `CLOB` em JSON cujos grupos e
+campos são definidos por um arquivo de configuração documentado à parte, no
+`fonte/Guia_do_Grupos_de_Dados_Adicionais.pdf`. Quem consulta o dicionário precisa chegar a essa
+explicação a partir da coluna.
+
+**Decisão.** Cada guia é uma entrada de `window.GUIAS_COLUNAS`, em `docs/guias.js`, associada a uma
+ou mais colunas pela chave `TABELA.COLUNA` dentro de um schema. O conteúdo é declarativo (seções com
+blocos de parágrafo, tabela, código, lista e aviso) e o `app.js` o desenha em `#/<schema>/guia/<slug>`.
+Na grade, o nome de uma coluna com guia passa a apontar para o guia, com um ícone de livro ao lado e
+um link "Como funciona" abaixo da descrição; o mesmo vale para os resultados da busca.
+
+**Justificativa.** O guia não é dado extraído: não cabe nos `dados*.js`, que são regerados pelos
+extratores e sobrescreveriam qualquer edição. Também não cabe numa página HTML à parte, pelos mesmos
+motivos do ADR-008. Manter o conteúdo fora do `app.js` deixa o motor de renderização separado do
+texto, e o próximo guia passa a ser só uma entrada no array.
+
+**Consequências.** O `guias.js` é carregado antes do `app.js` e tem seu próprio `?v=`, que deve ser
+incrementado quando o conteúdo mudar. O verificador cobra a existência do arquivo, a ordem do
+`<script>` e a presença da renderização de guias.
+

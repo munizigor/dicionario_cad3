@@ -336,6 +336,13 @@ def verificar_datasets(rel, doc):
                "ordem dos scripts: dados dos schemas → app.js → core-init.min.js",
                "ordem encontrada: " + ", ".join(scripts))
 
+    # Os guias de colunas são escritos à mão (ADR-010), mas o app.js os lê na
+    # carga, então também precisam vir antes dele.
+    guias = posicao("guias.js")
+    rel.checar(g, guias is not None and app is not None and guias < app,
+               "guias.js carregado antes do app.js")
+    rel.checar(g, (SITE / "guias.js").exists(), "docs/guias.js existe no disco")
+
 
 def verificar_institucional(rel, doc, fonte_index):
     g = rel.grupo("Elementos institucionais")
@@ -442,6 +449,7 @@ def verificar_funcionalidades(rel, fonte_app):
         (r"hashchange", "roteamento por hash"),
         (r'ev\.key === "/"', "atalho / para focar a busca"),
         (r"calcularMapa", "mapa de relacionamentos"),
+        (r"paginaGuia", "páginas de guia de colunas"),
     ]:
         rel.checar(g, re.search(padrao, fonte_app), descricao)
 

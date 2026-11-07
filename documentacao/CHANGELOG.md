@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-11-07 — Correções de layout no mobile e nos selos do mapa
+
+### Corrigido
+- Rolagem horizontal da página inteira em telas estreitas. O `.row` do template, filho flex do
+  `.container-lg.d-flex`, crescia até a largura do conteúdo mais largo (grade de colunas, bloco de
+  código); com `min-width: 0` ele fica na largura da tela e os elementos largos rolam dentro de si.
+  Também passaram a quebrar linha o rótulo das constraints (antes em `nowrap`), os selos do mapa e
+  os identificadores nos resultados da busca. Conferido nas 92 rotas do site a 360px.
+- Selos da seção "Tabelas sem relacionamentos declarados", no mapa, estavam invisíveis: a variante
+  `interaction-select` do core pressupõe o par `input`+`label` e, num `<a>`, deixava texto branco
+  sobre fundo transparente. Passaram a usar `.br-tag` simples com a classe `selo-link`.
+
+### Alterado
+- `?v=` de `styles.css` e `app.js` incrementado para 6.
+
+## 2026-11-07 — Guia da coluna DS_GRUPOS_ADICIONAIS
+
+### Adicionado
+- `fonte/Guia_do_Grupos_de_Dados_Adicionais.pdf`, fonte do guia.
+- `docs/guias.js` com o guia "Grupos de dados adicionais", servido em
+  `#/ocorrencia/guia/grupos-adicionais` (ADR-010).
+- Na grade de colunas e na busca, o nome `DS_GRUPOS_ADICIONAIS` passa a levar ao guia; a descrição
+  ganha o link "Como funciona".
+- Três checagens no `tools/verificar_conformidade.py`: 87 no total.
+
+### Alterado
+- `montarTrilha()` aceita passos intermediários; a trilha do guia passa pela tabela `OCORRENCIA`.
+- `?v=` de `styles.css` e `app.js` incrementado para 5.
+
 ## 2026-08-14 — Schema CAD_RECURSOS e navegação multi-schema
 
 O site passa a servir dois dicionários. O do `CAD_OCORRENCIA` continua igual; ao lado dele entra o

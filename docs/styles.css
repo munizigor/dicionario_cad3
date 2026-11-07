@@ -184,6 +184,17 @@
   :root { --largura-menu: 18rem; }
 }
 
+/* ---------- área de conteúdo ---------- */
+
+/* O .row do template é filho flex do .container-lg.d-flex e, com o
+   `min-width:auto` padrão do flex, cresce até a largura do conteúdo mais largo
+   (a grade de colunas, um bloco de código). No mobile isso empurrava a página
+   inteira para fora da tela, com rolagem horizontal. Com `min-width:0` o .row
+   fica na largura do contêiner e os elementos largos rolam dentro de si, pelo
+   .rolagem e pelo overflow do pre.codigo. */
+#main > .container-lg > .row { flex: 1 1 0%; min-width: 0; }
+#main > .container-lg > .row > .col { min-width: 0; }
+
 /* ---------- blocos de conteúdo ---------- */
 
 .cabecalho-pagina { margin-bottom: var(--spacing-scale-3x); }
@@ -309,6 +320,9 @@ table.grade tbody tr { scroll-margin-top: 6rem; }
 .col-desc { color: var(--texto-suave); white-space: pre-line; min-width: 16rem; }
 .col-marcas { white-space: nowrap; width: 1%; }
 .col-vazio { color: var(--texto-fraco); }
+/* Rótulo de constraint fora da grade: o nome pode ser longo e precisa quebrar,
+   senão vaza do card e gera rolagem horizontal no mobile. */
+.nome-constraint { white-space: normal; overflow-wrap: anywhere; }
 .col-referencia { margin-top: var(--spacing-scale-half); font-size: var(--font-size-scale-down-02); }
 
 /* ---------- selos de chave ---------- */
@@ -323,10 +337,23 @@ table.grade tbody tr { scroll-margin-top: 6rem; }
 }
 .br-tag.selo-pk { background-color: rgba(var(--orange-vivid-50-rgb), .14); color: var(--pk); }
 .br-tag.selo-fk { background-color: rgba(var(--green-cool-vivid-50-rgb), .14); color: var(--fk); }
+a.br-tag.selo-link { max-width: 100%; text-decoration: none; }
+a.br-tag.selo-link span { overflow-wrap: anywhere; }
+a.br-tag.selo-link:hover {
+  background-image: linear-gradient(rgba(var(--color-dark-rgb), var(--hover-dark)), rgba(var(--color-dark-rgb), var(--hover-dark)));
+}
+a.br-tag.selo-link:focus-visible {
+  outline: var(--focus-width) var(--focus-style) var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+.pilulas .br-tag + .br-tag { margin-left: 0; }  /* o espaçamento vem do gap */
 .br-tag.selo-nn { background-color: rgba(var(--violet-vivid-70-rgb), .12); color: var(--nn); }
 
 /* ---------- busca ---------- */
 
+/* Nomes de tabela e coluna são identificadores longos sem espaço; no mobile
+   precisam quebrar em qualquer ponto para não vazar do card. */
+.resultado { overflow-wrap: anywhere; }
 .resultado h3 { margin: 0; font-family: var(--mono); font-size: var(--font-size-scale-up-01); }
 .resultado .contagem {
   margin-left: var(--spacing-scale-base);
@@ -363,6 +390,36 @@ pre.codigo {
   color: var(--texto-suave);
   white-space: pre;
 }
+
+/* ---------- guias de colunas ---------- */
+
+.marca-guia { margin-left: var(--spacing-scale-half); color: var(--interactive); font-size: .85em; }
+.colunas-guia { margin: var(--spacing-scale-2x) 0 0; font-size: var(--font-size-scale-down-01); color: var(--texto-fraco); }
+.colunas-guia a { font-family: var(--mono); font-weight: var(--font-weight-semi-bold); }
+.secao-guia { scroll-margin-top: 9rem; }
+.secao-guia:focus { outline: none; }
+.subtitulo-guia {
+  margin: var(--spacing-scale-3x) 0 var(--spacing-scale-base);
+  font-size: var(--font-size-scale-up-01);
+  font-weight: var(--font-weight-semi-bold);
+}
+.secao-guia .card-content > :first-child { margin-top: 0; }
+.secao-guia code,
+.descricao-tabela code {
+  padding: 0 var(--spacing-scale-half);
+  background: var(--superficie-suave);
+  border-radius: var(--surface-rounder-sm);
+  font-family: var(--mono);
+  font-size: .9em;
+}
+table.grade-guia td { color: var(--texto-suave); }
+table.grade-guia td:first-child { color: var(--gray-80); font-weight: var(--font-weight-semi-bold); }
+.lista-guia { max-width: 46rem; color: var(--texto-suave); }
+.lista-guia li { margin-bottom: var(--spacing-scale-half); }
+.lista-guia.checklist { padding-left: 0; list-style: none; }
+.lista-guia.checklist .fa-check-square { color: var(--interactive); }
+.sumario-guia { margin: 0; columns: 2 16rem; }
+.sumario-guia li { break-inside: avoid; padding: 2px 0; }
 
 /* ---------- diagramas ---------- */
 

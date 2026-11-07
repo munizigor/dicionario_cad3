@@ -34,6 +34,16 @@
   var POR_SLUG = Object.create(null);
   SCHEMAS.forEach(function (s) { POR_SLUG[s.slug] = s; });
 
+  /* Guias de colunas (docs/guias.js, escrito à mão). Indexados por slug do
+     guia e por "schema:TABELA.COLUNA", para a grade trocar o link da coluna
+     pelo do guia. Ver documentacao/decisoes.md, ADR-010. */
+  var GUIAS = Object.create(null);
+  var GUIA_POR_COLUNA = Object.create(null);
+  (window.GUIAS_COLUNAS || []).forEach(function (g) {
+    GUIAS[g.schema + ":" + g.slug] = g;
+    g.colunas.forEach(function (chave) { GUIA_POR_COLUNA[g.schema + ":" + chave] = g; });
+  });
+
   /* Estado do schema ativo. Reatribuído por selecionarSchema(); nada aqui pode
      ser capturado em closure fora das funções que rodam depois da troca. */
   var ATUAL = null;
@@ -224,6 +234,18 @@
   /** Monta um hash dentro do schema ativo: rota("tabela/X") → "#/recursos/tabela/X". */
   function rota(sufixo) {
     return "#/" + ATUAL.slug + (sufixo ? "/" + sufixo : "");
+  }
+
+  function guiaDaColuna(nomeTabela, nomeColuna) {
+    return GUIA_POR_COLUNA[ATUAL.slug + ":" + nomeTabela + "." + nomeColuna] || null;
+  }
+
+  /* Link de uma coluna: o guia, quando ela tem um; senão, a própria linha na
+     grade da tabela, realçada. */
+  function hrefColuna(nomeTabela, nomeColuna) {
+    var guia = guiaDaColuna(nomeTabela, nomeColuna);
+    if (guia) return rota("guia/" + guia.slug);
+    return rota("tabela/" + nomeTabela) + "?col=" + encodeURIComponent(nomeColuna);
   }
 
   function buscar(consulta) {
@@ -992,6 +1014,7 @@
 
       linhas.forEach(function (c) {
         var alvoFk = c.fk ? fkDaColuna(tabela, c.nome) : null;
+        var guia = guiaDaColuna(tabela.nome, c.nome);
         // `data-th` é o rótulo que o DS expõe no layout responsivo da tabela.
         var marcas = el("td", { classe: "col-marcas", "data-th": "Chaves" }, [
           c.pk ? tag("PK", "selo-chave selo-pk") : null,
@@ -1003,9 +1026,11 @@
           el("td", { classe: "col-num", texto: c.no, "data-th": "Nº" }),
           el("td", { classe: "col-nome", "data-th": "Coluna" }, [
             el("a", {
-              href: rota("tabela/" + tabela.nome) + "?col=" + encodeURIComponent(c.nome),
+              href: hrefColuna(tabela.nome, c.nome),
+              title: guia ? "Abrir o guia: " + guia.titulo : null,
               texto: c.nome
-            })
+            }),
+            guia ? el("span", { classe: "marca-guia", title: "Esta coluna tem guia" }, [icone("book-open")]) : null
           ]),
           marcas,
           el("td", { classe: "col-tipo", texto: c.tipo, "data-th": "Tipo" })
@@ -1020,6 +1045,11 @@
               href: rota("tabela/" + alvoFk.tabela) + "?col=" + encodeURIComponent(alvoFk.coluna),
               texto: alvoFk.tabela + "." + alvoFk.coluna
             })
+          ]) : null,
+          guia ? el("div", { classe: "col-referencia" }, [
+            icone("book-open"),
+            document.createTextNode(" "),
+            el("a", { href: rota("guia/" + guia.slug), texto: "Como funciona: " + guia.titulo })
           ]) : null
         ]));
 
@@ -1196,7 +1226,7 @@
     if (tabela.constraints.length) {
       frag.appendChild(painel("Constraints", null, el("div", {}, tabela.constraints.map(function (ct) {
         return el("div", { classe: "mb-3" }, [
-          el("div", { classe: "col-nome", texto: [ct.tipo, ct.alvo].filter(Boolean).join(" · ").replace(/\n/g, " ") }),
+          el("div", { classe: "col-nome nome-constraint", texto: [ct.tipo, ct.alvo].filter(Boolean).join(" · ").replace(/\n/g, " ") }),
           el("pre", { classe: "codigo", texto: ct.detalhes.join("\n") })
         ]);
       }))));
@@ -1306,7 +1336,7 @@
           colunas.length ? el("ul", {}, colunas.map(function (c) {
             return el("li", {}, [
               el("a", {
-                href: rota("tabela/" + grupo.tabela.nome) + "?col=" + encodeURIComponent(c.nome),
+                href: hrefColuna(grupo.tabela.nome, c.nome),
                 classe: "nome-col"
               }, [destacar(c.nome, consulta)]),
               el("span", { classe: "tipo-col", texto: c.tipo }),
@@ -1357,12 +1387,109 @@
     if (isoladas.length) {
       frag.appendChild(painel("Tabelas sem relacionamentos declarados", isoladas.length + " tabelas",
         el("div", { classe: "pilulas" }, isoladas.map(function (t) {
-          return el("a", { classe: "br-tag interaction-select", href: rota("tabela/" + t.nome) }, [
+          // `.br-tag` simples: a variante `interaction-select` do core pressupõe o
+          // par input+label e, num <a>, deixa texto branco sobre fundo transparente.
+          return el("a", { classe: "br-tag selo-link", href: rota("tabela/" + t.nome) }, [
             el("span", { texto: t.nome })
           ]);
         }))));
     }
 
+    return frag;
+  }
+
+  /* Texto com trechos entre crases: cada `trecho` vira <code>, o resto texto. */
+  function textoRico(texto) {
+    return String(texto).split("`").map(function (parte, i) {
+      return i % 2 ? el("code", { texto: parte }) : document.createTextNode(parte);
+    });
+  }
+
+  function blocoGuia(b) {
+    switch (b.tipo) {
+      case "p": return el("p", { classe: "texto-longo" }, textoRico(b.texto));
+      case "subtitulo": return el("h3", { classe: "subtitulo-guia", texto: b.texto });
+      case "codigo": return el("pre", { classe: "codigo mb-3", texto: b.texto });
+      case "nota": return el("div", { classe: "mb-3" }, [mensagem(b.nivel, b.titulo, b.texto)]);
+      case "lista":
+      case "checklist":
+        return el("ul", { classe: b.tipo === "checklist" ? "lista-guia checklist" : "lista-guia" },
+          b.itens.map(function (item) {
+            return el("li", {}, [
+              b.tipo === "checklist" ? icone("check-square") : null,
+              b.tipo === "checklist" ? document.createTextNode(" ") : null
+            ].concat(textoRico(item)));
+          }));
+      case "tabela":
+        var emCodigo = b.codigo || [];
+        return el("div", { classe: "rolagem mb-3" }, [
+          el("table", { classe: "grade grade-guia" }, [
+            el("thead", {}, [el("tr", {}, b.colunas.map(function (c) {
+              return el("th", { texto: c, scope: "col" });
+            }))]),
+            el("tbody", {}, b.linhas.map(function (linha) {
+              return el("tr", {}, linha.map(function (celula, i) {
+                return el("td", { "data-th": b.colunas[i] },
+                  emCodigo.indexOf(i) >= 0 ? [el("code", { texto: celula })] : [celula]);
+              }));
+            }))
+          ])
+        ]);
+    }
+    return null;
+  }
+
+  function paginaGuia(slug) {
+    var guia = GUIAS[ATUAL.slug + ":" + slug];
+    var frag = document.createDocumentFragment();
+    if (!guia) {
+      frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [el("h1", { texto: "Guia não encontrado" })]));
+      frag.appendChild(mensagem("danger", "Guia não encontrado.",
+        "Não existe nenhum guia chamado “" + slug + "” neste dicionário."));
+      return frag;
+    }
+
+    frag.appendChild(el("div", { classe: "cabecalho-pagina" }, [
+      el("h1", { texto: guia.titulo }),
+      el("p", { classe: "descricao-tabela", texto: guia.resumo }),
+      el("p", { classe: "colunas-guia" }, [
+        icone("columns"),
+        document.createTextNode(guia.colunas.length > 1 ? " Colunas: " : " Coluna: ")
+      ].concat(guia.colunas.map(function (chave, i) {
+        var partes = chave.split(".");
+        return el("span", {}, [
+          i ? document.createTextNode(", ") : null,
+          el("a", {
+            href: rota("tabela/" + partes[0]) + "?col=" + encodeURIComponent(partes[1]),
+            texto: chave
+          })
+        ]);
+      })))
+    ]));
+
+    // Sumário: um link por seção, para um guia longo ser navegável.
+    frag.appendChild(painel("Nesta página", null, el("ol", { classe: "sumario-guia" },
+      guia.secoes.map(function (s, i) {
+        return el("li", {}, [el("a", {
+          href: "#secao-guia-" + i,
+          onclick: function (ev) {
+            // A âncora comum trocaria o hash e dispararia o roteador.
+            ev.preventDefault();
+            var alvo = document.getElementById("secao-guia-" + i);
+            if (alvo) { alvo.focus({ preventScroll: true }); alvo.scrollIntoView({ block: "start", behavior: "smooth" }); }
+          },
+          texto: s.titulo
+        })]);
+      }))));
+
+    guia.secoes.forEach(function (s, i) {
+      frag.appendChild(el("section", { classe: "br-card mb-4 secao-guia", id: "secao-guia-" + i, tabindex: "-1" }, [
+        el("h2", { classe: "card-header", texto: s.titulo }),
+        el("div", { classe: "card-content" }, s.blocos.map(blocoGuia))
+      ]));
+    });
+
+    frag.appendChild(el("p", { classe: "proveniencia", texto: "Origem: " + guia.fonte + "." }));
     return frag;
   }
 
@@ -1470,7 +1597,7 @@
 
   /* Trilha no formato br-breadcrumb: o item "Início" é o botão de casa, e a
      página corrente é um <span aria-current="page">, não um link. */
-  function montarTrilha(atual) {
+  function montarTrilha(atual, intermediarios) {
     var lista = $("#lista-trilha");
     limpar(lista);
 
@@ -1482,6 +1609,13 @@
     ]));
 
     if (!atual) return;
+    // `intermediarios` são passos com link entre o início e a página corrente.
+    (intermediarios || []).forEach(function (passo) {
+      lista.appendChild(el("li", { classe: "crumb" }, [
+        el("i", { classe: "icon fas fa-chevron-right", "aria-hidden": "true" }),
+        el("a", { href: passo.href, texto: passo.rotulo })
+      ]));
+    });
     lista.appendChild(el("li", { classe: "crumb", "data-active": "active" }, [
       el("i", { classe: "icon fas fa-chevron-right", "aria-hidden": "true" }),
       el("span", { tabindex: "0", "aria-current": "page", texto: atual })
@@ -1516,6 +1650,15 @@
       montarTrilha(nome);
       marcarAtual(nome);
       if (POR_NOME[nome]) document.title = nome + sufixo;
+    } else if (caminho[0] === "guia" && caminho[1]) {
+      var guia = GUIAS[ATUAL.slug + ":" + decodeURIComponent(caminho[1])];
+      conteudo.appendChild(paginaGuia(decodeURIComponent(caminho[1])));
+      // A trilha passa pela tabela da primeira coluna associada ao guia.
+      var tabelaGuia = guia ? guia.colunas[0].split(".")[0] : null;
+      montarTrilha(guia ? guia.titulo : "Guia não encontrado",
+        tabelaGuia ? [{ rotulo: tabelaGuia, href: rota("tabela/" + tabelaGuia) }] : null);
+      marcarAtual(tabelaGuia);
+      if (guia) document.title = guia.titulo + sufixo;
     } else if (caminho[0] === "busca") {
       var consulta = parametros.get("q") || "";
       $("#busca-global").value = consulta;
